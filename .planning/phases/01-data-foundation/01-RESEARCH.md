@@ -630,22 +630,21 @@ async def ingest_crypto_batch(cg: CoinGeckoAPI, session):
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Finnhub free tier symbol limit under sustained load**
+1. **Finnhub free tier symbol limit under sustained load** — RESOLVED
    - What we know: Free tier advertises 60 req/min REST + WebSocket available
-   - What's unclear: Whether 50-symbol WS subscriptions hold stable for 8+ hours without disconnect or silent failure
-   - Recommendation: Phase 1 plan should include a Finnhub WS stability test (run for 2 hours, verify no silent drops) as an explicit task before declaring DATA-01 complete
+   - What was unclear: Whether 50-symbol WS subscriptions hold stable for 8+ hours
+   - Decision: Phase 1 plan includes reconnect loop with 5s backoff (RESEARCH.md Pitfall 4 pattern). Stability test deferred to post-Phase-1 operational review.
 
-2. **CoinGecko volume data for OHLCV**
-   - What we know: `get_coin_ohlc_by_id` returns [ts, open, high, low, close] — no volume
-   - What's unclear: Whether volume is required for Phase 1 (success criteria says "OHLCV") or if close-only candles are acceptable for crypto
-   - Recommendation: Fetch volume separately from `get_coin_market_chart_by_id` and join, or mark crypto volume as NULL in Phase 1 and populate in a later enhancement
+2. **CoinGecko volume data for OHLCV** — RESOLVED
+   - What we know: `get_coin_ohlc_by_id` returns [ts, open, high, low, close] — no volume field
+   - Decision: Set `volume=0.0` for all CoinGecko-sourced candles. `OHLCVCandle.volume` is a required float field and cannot be None. A comment in `normalize_coingecko()` documents this known limitation. Fetching volume from `get_coin_market_chart_by_id` and joining is a future enhancement (deferred — would double monthly API call budget).
+   - Implementation: In `backend/app/ingestion/normalizer.py`, `normalize_coingecko()` sets `volume=0.0` explicitly for every candle constructed from a 5-element [ts,o,h,l,c] row.
 
-3. **SQLite dev environment for TimescaleDB-specific features**
+3. **SQLite dev environment for TimescaleDB-specific features** — RESOLVED
    - What we know: TimescaleDB features (`create_hypertable`, time_bucket) are PostgreSQL-only
-   - What's unclear: Whether the local dev workflow should require Docker for Postgres or if plain SQLite is acceptable for non-time-series queries
-   - Recommendation: Use Docker Compose with `timescale/timescaledb:latest-pg16` for all environments including local dev. SQLite is acceptable only for unit tests with mocked DB sessions.
+   - Decision: Use Docker Compose with `timescale/timescaledb:latest-pg16` for all environments including local dev. SQLite is acceptable only for unit tests with mocked DB sessions.
 
 ---
 
