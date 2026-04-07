@@ -106,45 +106,45 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | TBD | Pending |
-| DATA-02 | TBD | Pending |
-| DATA-03 | TBD | Pending |
-| DATA-04 | TBD | Pending |
-| DATA-05 | TBD | Pending |
-| DATA-06 | TBD | Pending |
-| ANLYS-01 | TBD | Pending |
-| ANLYS-02 | TBD | Pending |
-| ANLYS-03 | TBD | Pending |
-| ANLYS-04 | TBD | Pending |
-| ANLYS-05 | TBD | Pending |
-| ANLYS-06 | TBD | Pending |
-| BKTS-01 | TBD | Pending |
-| BKTS-02 | TBD | Pending |
-| BKTS-03 | TBD | Pending |
-| BKTS-04 | TBD | Pending |
-| PAPER-01 | TBD | Pending |
-| PAPER-02 | TBD | Pending |
-| PAPER-03 | TBD | Pending |
-| PAPER-04 | TBD | Pending |
-| DASH-01 | TBD | Pending |
-| DASH-02 | TBD | Pending |
-| DASH-03 | TBD | Pending |
-| DASH-04 | TBD | Pending |
-| DASH-05 | TBD | Pending |
-| ALERT-01 | TBD | Pending |
-| ALERT-02 | TBD | Pending |
-| ALERT-03 | TBD | Pending |
-| ALERT-04 | TBD | Pending |
-| EDU-01 | TBD | Pending |
-| EDU-02 | TBD | Pending |
-| EDU-03 | TBD | Pending |
-| EDU-04 | TBD | Pending |
+| DATA-01 | Phase 1 | Pending |
+| DATA-02 | Phase 1 | Pending |
+| DATA-03 | Phase 1 | Pending |
+| DATA-04 | Phase 1 | Pending |
+| DATA-05 | Phase 1 | Pending |
+| DATA-06 | Phase 7 | Pending |
+| ANLYS-01 | Phase 2 | Pending |
+| ANLYS-02 | Phase 2 | Pending |
+| ANLYS-03 | Phase 7 | Pending |
+| ANLYS-04 | Phase 2 | Pending |
+| ANLYS-05 | Phase 7 | Pending |
+| ANLYS-06 | Phase 2 | Pending |
+| BKTS-01 | Phase 3 | Pending |
+| BKTS-02 | Phase 3 | Pending |
+| BKTS-03 | Phase 3 | Pending |
+| BKTS-04 | Phase 3 | Pending |
+| PAPER-01 | Phase 4 | Pending |
+| PAPER-02 | Phase 4 | Pending |
+| PAPER-03 | Phase 4 | Pending |
+| PAPER-04 | Phase 4 | Pending |
+| DASH-01 | Phase 5 | Pending |
+| DASH-02 | Phase 5 | Pending |
+| DASH-03 | Phase 5 | Pending |
+| DASH-04 | Phase 5 | Pending |
+| DASH-05 | Phase 5 | Pending |
+| ALERT-01 | Phase 6 | Pending |
+| ALERT-02 | Phase 6 | Pending |
+| ALERT-03 | Phase 6 | Pending |
+| ALERT-04 | Phase 6 | Pending |
+| EDU-01 | Phase 7 | Pending |
+| EDU-02 | Phase 6 | Pending |
+| EDU-03 | Phase 6 | Pending |
+| EDU-04 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 33 total
-- Mapped to phases: 0
-- Unmapped: 33 ⚠️
+- Mapped to phases: 33
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 after initial definition*
+*Last updated: 2026-04-06 after roadmap creation — all 33 requirements mapped*
