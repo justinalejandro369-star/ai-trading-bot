@@ -1405,6 +1405,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pandas-ta-classic"
+version = "0.4.47"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "pandas" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c1/83/6789ac41666a71d995a3d00d66067cae42f76f0996917e4560bb5eae5aa8/pandas_ta_classic-0.4.47-py3-none-any.whl", hash = "sha256:5dcb3b61c5affe9a7625079ccbab40e647d4ba0d49932e287ba43c3c3a28b0ec", size = 266591, upload-time = "2026-03-17T12:22:35.248Z" },
+]
+
+[[package]]
 name = "pathspec"
 version = "1.0.4"
 source = { registry = "https://pypi.org/simple" }
@@ -2119,6 +2131,7 @@ dependencies = [
     { name = "greenlet" },
     { name = "httpx" },
     { name = "pandas" },
+    { name = "pandas-ta-classic" },
     { name = "psycopg2-binary" },
     { name = "pycoingecko" },
     { name = "pydantic" },
@@ -2151,6 +2164,7 @@ requires-dist = [
     { name = "greenlet", specifier = ">=3.3.2" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "pandas", specifier = ">=3.0.2" },
+    { name = "pandas-ta-classic", specifier = ">=0.4.47" },
     { name = "psycopg2-binary", specifier = ">=2.9.11" },
     { name = "pycoingecko", specifier = ">=3.2.0" },
     { name = "pydantic", specifier = ">=2.12.5" },
