@@ -17,10 +17,12 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.api.routes.market_data import get_session
+from app.core.auth import get_current_user
 from app.main import app
 from app.models.backtest import BacktestRun  # noqa: F401 — registers table with Base.metadata
 from app.models.market_data import Base, MarketData  # noqa: F401 — registers table with Base.metadata
 from app.analysis.indicators import MIN_CANDLES
+from tests.conftest import override_get_current_user
 
 # ---------------------------------------------------------------------------
 # In-memory SQLite test database
@@ -92,6 +94,7 @@ async def client_with_data(monkeypatch):
             yield session
 
     app.dependency_overrides[get_session] = override_get_session
+    app.dependency_overrides[get_current_user] = override_get_current_user
 
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
@@ -116,6 +119,7 @@ async def client_empty(monkeypatch):
             yield session
 
     app.dependency_overrides[get_session] = override_get_session
+    app.dependency_overrides[get_current_user] = override_get_current_user
 
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
@@ -214,6 +218,7 @@ async def test_post_backtest_insufficient_rows_returns_422(monkeypatch):
             yield session
 
     app.dependency_overrides[get_session] = override_get_session
+    app.dependency_overrides[get_current_user] = override_get_current_user
 
     try:
         async with AsyncClient(
