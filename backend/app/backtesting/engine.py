@@ -14,6 +14,8 @@ Transaction costs:
 Signal logic mirrors score_signal() from Phase 2 (signals.py) but vectorized
 across the full historical DataFrame instead of the last bar only.
 """
+import math
+
 import pandas as pd
 import pandas_ta_classic as ta
 import vectorbt as vbt
@@ -187,16 +189,27 @@ def run_backtest(
 
     stats = pf.stats()
 
-    # Extract metrics — convert percentages to fractions where needed
+    # Extract metrics — convert percentages to fractions where needed.
+    # Guard against NaN: vectorbt returns NaN for win_rate/profit_factor when
+    # there are zero completed round-trips (e.g. only 1 trade entered, never exited).
     win_rate_raw = stats.get("Win Rate [%]", 0.0)
     max_dd_raw   = stats.get("Max Drawdown [%]", 0.0)
+    profit_factor_raw = stats.get("Profit Factor", 0.0)
+
+    def _safe_float(v: float, fallback: float = 0.0) -> float:
+        """Return fallback if v is NaN or infinite; otherwise return float(v)."""
+        f = float(v)
+        return fallback if (math.isnan(f) or math.isinf(f)) else f
+
+    sharpe_raw = pf.sharpe_ratio()
+    total_return_raw = pf.total_return()
 
     return BacktestResult(
-        sharpe_ratio=float(pf.sharpe_ratio()),
-        max_drawdown=float(-abs(max_dd_raw) / 100.0),   # negative fraction
-        win_rate=float(win_rate_raw) / 100.0,            # fraction [0,1]
-        profit_factor=float(stats.get("Profit Factor", 0.0)),
-        total_return=float(pf.total_return()),
+        sharpe_ratio=_safe_float(sharpe_raw),
+        max_drawdown=_safe_float(-abs(max_dd_raw) / 100.0),   # negative fraction
+        win_rate=_safe_float(float(win_rate_raw) / 100.0),    # fraction [0,1]
+        profit_factor=_safe_float(profit_factor_raw),
+        total_return=_safe_float(total_return_raw),
         total_trades=int(stats.get("Total Trades", 0)),
         equity_curve=_serialize_equity(pf.value()),
     )
