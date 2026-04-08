@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-analysis-engine/02-03-PLAN.md
-last_updated: "2026-04-08T06:11:54.664Z"
+stopped_at: Completed 03-backtesting-engine/03-01-PLAN.md
+last_updated: "2026-04-08T13:13:41.383Z"
 last_activity: 2026-04-08
 progress:
   total_phases: 7
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
   percent: 0
 ---
 
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P03 | 4 | 2 tasks | 10 files |
 | Phase 02-analysis-engine P02 | 2 | 2 tasks | 7 files |
 | Phase 02-analysis-engine P03 | 4 | 2 tasks | 4 files |
+| Phase 03 P01 | 9 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,8 @@ Recent decisions affecting current work:
 - [Phase 02-analysis-engine]: Volume surge zero-guard (vol_sma_20 > 0) prevents ZeroDivisionError for CoinGecko zero-volume assets
 - [Phase 02-analysis-engine]: Watchlist constants extracted to app/core/watchlists.py to resolve circular import between scanner.py and scheduler.py
 - [Phase 02-analysis-engine]: SCAN_INTERVAL set to 1D only -- multi-timeframe deferred to Phase 7
+- [Phase 03]: vectorbt pandas override: vectorbt 0.28.5 works with pandas 3.x at runtime despite <3.0 declaration; resolved via uv override-dependencies and platform environments
+- [Phase 03]: BKTS-02 audit test uses shift(-1) for true look-ahead bias: close.shift(-1)>close peeks at next bar's price — biased Sharpe=11.2 vs honest=-2.1 proves shift(1) works
 
 ### Pending Todos
 
@@ -99,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-08T06:08:39.698Z
-Stopped at: Completed 02-analysis-engine/02-03-PLAN.md
+Last session: 2026-04-08T13:13:41.381Z
+Stopped at: Completed 03-backtesting-engine/03-01-PLAN.md
 Resume file: None
