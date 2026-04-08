@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Data Foundation** - Ingest and store normalized OHLCV data for stocks and crypto via free APIs (completed 2026-04-08)
 - [x] **Phase 2: Analysis Engine** - Compute technical indicators and generate rule-based AI signals with scores (completed 2026-04-08)
 - [ ] **Phase 3: Backtesting Engine** - Validate signal quality against historical data with look-ahead bias prevention
-- [ ] **Phase 4: Paper Trading Simulator** - Simulate trading with fake money against live data with P&L tracking
+- [x] **Phase 4: Paper Trading Simulator** - Simulate trading with fake money against live data with P&L tracking (completed 2026-04-08)
 - [ ] **Phase 5: Dashboard** - Web dashboard with charts, signal feed, portfolio view, and real-time updates
 - [ ] **Phase 6: Alerts and Education** - Configurable alert channels and educational context for new traders
 - [ ] **Phase 7: LLM Explanations and Market Expansion** - LLM-powered signal reasoning, multi-timeframe correlation, and forex data
@@ -83,7 +83,7 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md — PaperAccount/PaperPosition/EquitySnapshot ORM models, Alembic migration 004, fill_order() + compute_equity() pure engine, Pydantic request models, TDD unit tests (RED→GREEN)
-- [ ] 04-02-PLAN.md — Five REST endpoints (/accounts, /accounts/{id}, /accounts/{id}/orders, /accounts/{id}/equity, /accounts/{id}/compare), equity_snapshot_job (APScheduler, max_instances=1), scheduler.py 5th job, main.py router wiring, integration tests GREEN
+- [x] 04-02-PLAN.md — Five REST endpoints (/accounts, /accounts/{id}, /accounts/{id}/orders, /accounts/{id}/equity, /accounts/{id}/compare), equity_snapshot_job (APScheduler, max_instances=1), scheduler.py 5th job, main.py router wiring, integration tests GREEN
 
 ### Phase 5: Dashboard
 **Goal**: Users can view all system outputs — charts, signals, portfolio, and analytics — through a responsive web interface with real-time updates
@@ -131,7 +131,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 1. Data Foundation | 3/3 | Complete   | 2026-04-08 |
 | 2. Analysis Engine | 3/3 | Complete   | 2026-04-08 |
 | 3. Backtesting Engine | 0/2 | Not started | - |
-| 4. Paper Trading Simulator | 1/2 | In Progress|  |
+| 4. Paper Trading Simulator | 2/2 | Complete   | 2026-04-08 |
 | 5. Dashboard | 0/? | Not started | - |
 | 6. Alerts and Education | 0/? | Not started | - |
 | 7. LLM Explanations and Market Expansion | 0/? | Not started | - |
