@@ -5,7 +5,6 @@ Persists backtest results for Phase 4 paper trading comparison.
 Imports Base from market_data to share the same declarative registry.
 """
 import json
-from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Float, Integer, String, Text
 
