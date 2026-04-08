@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+
+# Ruff
+.ruff_cache/
+
+# Environment files (never commit real keys)
+.env
+*.env.local
+*.env.development
+*.env.production
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+.docker/
+
+# Node.js (for frontend)
+node_modules/
+.npm
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+
+# uv
+# Include uv.lock for reproducible builds
