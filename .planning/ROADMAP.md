@@ -51,8 +51,8 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — pandas-ta-classic install, TradingSignal model, Alembic migration 002, indicators.py (compute_indicators), test_indicators.py
-- [ ] 02-02-PLAN.md — signals.py (score_signal), regime.py (detect_regime), REST endpoints (GET /api/indicators/{symbol}, GET /api/signals, GET /api/signals/top), test_signals.py, test_analysis_api.py
+- [x] 02-01-PLAN.md — pandas-ta-classic install, TradingSignal model, Alembic migration 002, indicators.py (compute_indicators), test_indicators.py
+- [x] 02-02-PLAN.md — signals.py (score_signal), regime.py (detect_regime), REST endpoints (GET /api/indicators/{symbol}, GET /api/signals, GET /api/signals/top), test_signals.py, test_analysis_api.py
 - [ ] 02-03-PLAN.md — scanner.py (scan_asset, scan_all_assets, analysis_scan_job), scheduler.py 4th job registration, test_scanner.py, full suite green
 
 ### Phase 3: Backtesting Engine
@@ -121,7 +121,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Data Foundation | 3/3 | Complete   | 2026-04-08 |
-| 2. Analysis Engine | 0/3 | Not started | - |
+| 2. Analysis Engine | 2/3 | In Progress|  |
 | 3. Backtesting Engine | 0/? | Not started | - |
 | 4. Paper Trading Simulator | 0/? | Not started | - |
 | 5. Dashboard | 0/? | Not started | - |
