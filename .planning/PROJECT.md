@@ -12,7 +12,11 @@ The AI must surface high-quality trading opportunities with clear reasoning and 
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Multi-market data ingestion (stocks, crypto) via free APIs — Validated in Phase 01: Data Foundation
+- [x] Normalized OHLCV data pipeline with TimescaleDB hypertable storage — Validated in Phase 01: Data Foundation
+- [x] Provider abstraction (OHLCVProvider ABC) enabling new sources without touching other modules — Validated in Phase 01: Data Foundation
+- [x] Conflict-safe upsert layer (no duplicate candles) — Validated in Phase 01: Data Foundation
+- [x] Scheduled background fetch (Celery/APScheduler) with REST query endpoint — Validated in Phase 01: Data Foundation
 
 ### Active
 
