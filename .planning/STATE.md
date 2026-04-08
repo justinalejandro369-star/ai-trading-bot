@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-analysis-engine/02-03-PLAN.md
-last_updated: "2026-04-08T13:23:36.614Z"
+stopped_at: Completed 04-paper-trading-simulator/04-01-PLAN.md
+last_updated: "2026-04-08T13:38:43.928Z"
 last_activity: 2026-04-08
 progress:
   total_phases: 7
   completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 10
+  completed_plans: 9
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Surface high-quality trading opportunities with clear reasoning and win-rate tracking, so users make informed decisions faster than manual scanning.
-**Current focus:** Phase 03 — backtesting-engine
+**Current focus:** Phase 04 — paper-trading-simulator
 
 ## Current Position
 
-Phase: 4
-Plan: Not started
-Status: Executing Phase 03
+Phase: 04 (paper-trading-simulator) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-04-08
 
 Progress: [░░░░░░░░░░] 0%
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P03 | 4 | 2 tasks | 10 files |
 | Phase 02-analysis-engine P02 | 2 | 2 tasks | 7 files |
 | Phase 02-analysis-engine P03 | 4 | 2 tasks | 4 files |
+| Phase 04-paper-trading-simulator P01 | 4min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,8 @@ Recent decisions affecting current work:
 - [Phase 02-analysis-engine]: Volume surge zero-guard (vol_sma_20 > 0) prevents ZeroDivisionError for CoinGecko zero-volume assets
 - [Phase 02-analysis-engine]: Watchlist constants extracted to app/core/watchlists.py to resolve circular import between scanner.py and scheduler.py
 - [Phase 02-analysis-engine]: SCAN_INTERVAL set to 1D only -- multi-timeframe deferred to Phase 7
+- [Phase 04-paper-trading-simulator]: fill_order() uses abs(gauss_offset) for BUY and -abs(gauss_offset) for SELL — directional slippage enforced without sign-dependent branching
+- [Phase 04-paper-trading-simulator]: slippage_std=0.0 short-circuits to offset=0.0 before random.gauss() call — deterministic test equality requires exact price
 
 ### Pending Todos
 
@@ -99,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-08T06:08:39.698Z
-Stopped at: Completed 02-analysis-engine/02-03-PLAN.md
+Last session: 2026-04-08T13:38:43.925Z
+Stopped at: Completed 04-paper-trading-simulator/04-01-PLAN.md
 Resume file: None

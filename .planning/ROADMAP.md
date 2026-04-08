@@ -82,7 +82,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — PaperAccount/PaperPosition/EquitySnapshot ORM models, Alembic migration 004, fill_order() + compute_equity() pure engine, Pydantic request models, TDD unit tests (RED→GREEN)
+- [x] 04-01-PLAN.md — PaperAccount/PaperPosition/EquitySnapshot ORM models, Alembic migration 004, fill_order() + compute_equity() pure engine, Pydantic request models, TDD unit tests (RED→GREEN)
 - [ ] 04-02-PLAN.md — Five REST endpoints (/accounts, /accounts/{id}, /accounts/{id}/orders, /accounts/{id}/equity, /accounts/{id}/compare), equity_snapshot_job (APScheduler, max_instances=1), scheduler.py 5th job, main.py router wiring, integration tests GREEN
 
 ### Phase 5: Dashboard
@@ -131,7 +131,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 1. Data Foundation | 3/3 | Complete   | 2026-04-08 |
 | 2. Analysis Engine | 3/3 | Complete   | 2026-04-08 |
 | 3. Backtesting Engine | 0/2 | Not started | - |
-| 4. Paper Trading Simulator | 0/2 | Not started | - |
+| 4. Paper Trading Simulator | 1/2 | In Progress|  |
 | 5. Dashboard | 0/? | Not started | - |
 | 6. Alerts and Education | 0/? | Not started | - |
 | 7. LLM Explanations and Market Expansion | 0/? | Not started | - |

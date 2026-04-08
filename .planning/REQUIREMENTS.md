@@ -34,10 +34,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Paper Trading
 
-- [ ] **PAPER-01**: User has a paper trading account with configurable starting balance and fake money
-- [ ] **PAPER-02**: Paper trades simulate order fills with slippage modeling against real-time data
-- [ ] **PAPER-03**: User can view P&L tracking over time with visual equity curve
-- [ ] **PAPER-04**: User can compare paper trading results vs backtest predictions
+- [x] **PAPER-01**: User has a paper trading account with configurable starting balance and fake money
+- [x] **PAPER-02**: Paper trades simulate order fills with slippage modeling against real-time data
+- [x] **PAPER-03**: User can view P&L tracking over time with visual equity curve
+- [x] **PAPER-04**: User can compare paper trading results vs backtest predictions
 
 ### Dashboard
 
@@ -122,10 +122,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BKTS-02 | Phase 3 | Pending |
 | BKTS-03 | Phase 3 | Pending |
 | BKTS-04 | Phase 3 | Pending |
-| PAPER-01 | Phase 4 | Pending |
-| PAPER-02 | Phase 4 | Pending |
-| PAPER-03 | Phase 4 | Pending |
-| PAPER-04 | Phase 4 | Pending |
+| PAPER-01 | Phase 4 | Complete |
+| PAPER-02 | Phase 4 | Complete |
+| PAPER-03 | Phase 4 | Complete |
+| PAPER-04 | Phase 4 | Complete |
 | DASH-01 | Phase 5 | Pending |
 | DASH-02 | Phase 5 | Pending |
 | DASH-03 | Phase 5 | Pending |
