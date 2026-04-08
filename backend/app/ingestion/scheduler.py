@@ -25,7 +25,9 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from fastapi import FastAPI
 
+from app.analysis.scanner import analysis_scan_job
 from app.core.database import async_session_factory
+from app.core.watchlists import CCXT_CRYPTO_SYMBOLS, CCXT_INTERVALS, STOCK_INTERVALS, STOCK_WATCHLIST
 from app.ingestion.providers.ccxt_provider import CCXTProvider
 from app.ingestion.providers.coingecko_provider import CoinGeckoProvider, ingest_all_coins
 from app.ingestion.providers.yfinance_provider import YfinanceProvider
@@ -41,6 +43,7 @@ __all__ = [
     "stock_incremental_job",
     "crypto_coingecko_job",
     "crypto_ccxt_job",
+    "analysis_scan_job",
 ]
 
 log = logging.getLogger(__name__)
@@ -48,20 +51,9 @@ log = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Watchlist and interval constants
 # ---------------------------------------------------------------------------
-
-#: Top-5 US stocks by market cap — primary watchlist for MVP
-STOCK_WATCHLIST: list[str] = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"]
-
-#: yfinance intervals — must be lowercase to match YFINANCE_MAX_HISTORY keys.
-#: Note: yfinance uses "1h"/"1d" (lowercase), not "1H"/"1D".
-#: 4H is intentionally omitted — yfinance 4h support is unreliable on free tier.
-STOCK_INTERVALS: list[str] = ["1m", "5m", "15m", "1h", "1d"]
-
-#: Top-3 crypto pairs on Binance (CCXT format: "BASE/QUOTE")
-CCXT_CRYPTO_SYMBOLS: list[str] = ["BTC/USDT", "ETH/USDT", "SOL/USDT"]
-
-#: All 6 canonical app intervals — CCXT_INTERVAL_MAP supports all of these
-CCXT_INTERVALS: list[str] = ["1m", "5m", "15m", "1H", "4H", "1D"]
+# Defined in app.core.watchlists to avoid circular import with scanner.py.
+# Re-exported here for backward compatibility (existing callers import from scheduler).
+# STOCK_WATCHLIST, STOCK_INTERVALS, CCXT_CRYPTO_SYMBOLS, CCXT_INTERVALS
 
 # ---------------------------------------------------------------------------
 # Scheduler jobs
@@ -139,10 +131,11 @@ async def lifespan(app: FastAPI):
     """
     FastAPI lifespan context manager: start and stop the APScheduler.
 
-    Three jobs are registered:
+    Four jobs are registered:
     - stock_incremental_job: every 5 minutes
     - crypto_coingecko_job: every 30 minutes
     - crypto_ccxt_job: every 15 minutes
+    - analysis_scan_job: every 5 minutes (runs after data ingestion)
 
     misfire_grace_time prevents job pile-up if a run is delayed (e.g., during startup).
     """
@@ -167,9 +160,16 @@ async def lifespan(app: FastAPI):
         replace_existing=True,
         misfire_grace_time=60,
     )
+    scheduler.add_job(
+        analysis_scan_job,
+        IntervalTrigger(minutes=5),
+        id="analysis_scan",
+        replace_existing=True,
+        misfire_grace_time=60,
+    )
 
     scheduler.start()
-    log.info("Scheduler started — 3 jobs registered (stock/5min, CoinGecko/30min, CCXT/15min)")
+    log.info("Scheduler started — 4 jobs registered (stock/5min, CoinGecko/30min, CCXT/15min, analysis/5min)")
 
     yield  # FastAPI serves requests here
 
