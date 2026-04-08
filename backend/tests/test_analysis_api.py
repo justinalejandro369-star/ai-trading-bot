@@ -20,6 +20,8 @@ from app.models.market_data import Base
 from app.models.signal import TradingSignal
 from app.api.routes.signals import get_session as signals_get_session
 from app.api.routes.indicators import get_session as indicators_get_session
+from app.core.auth import get_current_user
+from tests.conftest import override_get_current_user
 
 # --- Test database setup ---
 
@@ -54,6 +56,7 @@ async def client(test_session_factory):
 
     app.dependency_overrides[signals_get_session] = override_signals_session
     app.dependency_overrides[indicators_get_session] = override_indicators_session
+    app.dependency_overrides[get_current_user] = override_get_current_user
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac

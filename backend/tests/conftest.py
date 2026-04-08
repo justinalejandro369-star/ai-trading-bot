@@ -1,9 +1,34 @@
 """
-Shared pytest fixtures for Phase 2 analysis engine tests.
+Shared pytest fixtures for Phase 2 analysis engine tests and Phase 5 auth.
 """
 import numpy as np
 import pandas as pd
 import pytest
+
+
+# ---------------------------------------------------------------------------
+# Auth bypass helper for existing API tests
+# ---------------------------------------------------------------------------
+
+def override_get_current_user():
+    """
+    FastAPI dependency override that returns a fake admin user dict.
+    Inject via: app.dependency_overrides[get_current_user] = override_get_current_user
+    This allows pre-auth API tests to continue passing after auth was added.
+    """
+    return {"sub": "admin"}
+
+
+# ---------------------------------------------------------------------------
+# Auto-reset rate limiter before every test (prevents bleed between tests)
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limiter_global():
+    """Reset the shared rate limiter storage bucket before every test."""
+    from app.core.rate_limit import limiter
+    limiter._storage.reset()
+    yield
 
 
 def make_ohlcv_df(n_rows: int, seed: int = 42) -> pd.DataFrame:
