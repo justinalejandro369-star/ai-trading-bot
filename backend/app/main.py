@@ -21,8 +21,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
+from app.api.routes.alerts import router as alerts_router
 from app.api.routes.auth import router as auth_router
 from app.api.routes.backtest import router as backtest_router
+from app.api.routes.education import router as education_router
 from app.api.routes.indicators import router as indicators_router
 from app.api.routes.market_data import router as market_data_router
 from app.api.routes.paper_trading import router as paper_trading_router
@@ -94,3 +96,5 @@ app.include_router(indicators_router, prefix="/api", dependencies=_auth_dep)
 app.include_router(signals_router, prefix="/api", dependencies=_auth_dep)
 app.include_router(backtest_router, prefix="/api", dependencies=_auth_dep)
 app.include_router(paper_trading_router, prefix="/api", dependencies=_auth_dep)
+app.include_router(alerts_router, prefix="/api", dependencies=_auth_dep)
+app.include_router(education_router, prefix="/api")

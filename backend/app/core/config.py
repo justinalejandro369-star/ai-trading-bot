@@ -24,5 +24,10 @@ class Settings(BaseSettings):
     frontend_url: str = Field("http://localhost:5173", alias="FRONTEND_URL")
     cookie_samesite: str = Field("lax", alias="COOKIE_SAMESITE")
 
+    # Alert notification channels
+    telegram_bot_token: str = Field("", alias="TELEGRAM_BOT_TOKEN")
+    telegram_chat_id: str = Field("", alias="TELEGRAM_CHAT_ID")
+    discord_webhook_url: str = Field("", alias="DISCORD_WEBHOOK_URL")
+
 
 settings = Settings()

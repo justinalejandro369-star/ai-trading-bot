@@ -27,6 +27,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from fastapi import FastAPI
 
+from app.alerts.jobs import alert_check_job
 from app.analysis.scanner import analysis_scan_job
 from app.core.database import async_session_factory
 from app.paper_trading.snapshot import equity_snapshot_job
@@ -180,11 +181,18 @@ async def lifespan(app: FastAPI):
         misfire_grace_time=60,
         max_instances=1,  # prevents duplicate snapshots if job runs long
     )
+    scheduler.add_job(
+        alert_check_job,
+        IntervalTrigger(minutes=5),
+        id="alert_check",
+        replace_existing=True,
+        misfire_grace_time=60,
+    )
 
     scheduler.start()
     log.info(
-        "Scheduler started — 5 jobs registered "
-        "(stock/5min, CoinGecko/30min, CCXT/15min, analysis/5min, paper_equity/5min)"
+        "Scheduler started — 6 jobs registered "
+        "(stock/5min, CoinGecko/30min, CCXT/15min, analysis/5min, paper_equity/5min, alerts/5min)"
     )
 
     yield  # FastAPI serves requests here
