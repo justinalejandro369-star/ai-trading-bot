@@ -29,11 +29,13 @@ from fastapi import FastAPI
 
 from app.alerts.jobs import alert_check_job
 from app.analysis.scanner import analysis_scan_job
+from app.core.config import settings
 from app.core.database import async_session_factory
 from app.paper_trading.snapshot import equity_snapshot_job
 from app.core.watchlists import CCXT_CRYPTO_SYMBOLS, CCXT_INTERVALS, STOCK_INTERVALS, STOCK_WATCHLIST
 from app.ingestion.providers.ccxt_provider import CCXTProvider
 from app.ingestion.providers.coingecko_provider import CoinGeckoProvider, ingest_all_coins
+from app.ingestion.providers.forex_provider import ForexProvider, FOREX_SYMBOLS, FOREX_INTERVAL
 from app.ingestion.providers.yfinance_provider import YfinanceProvider
 from app.ingestion.upsert import upsert_candles
 
@@ -47,6 +49,7 @@ __all__ = [
     "stock_incremental_job",
     "crypto_coingecko_job",
     "crypto_ccxt_job",
+    "forex_daily_job",
     "analysis_scan_job",
     "equity_snapshot_job",
 ]
@@ -123,6 +126,26 @@ async def crypto_ccxt_job() -> None:
                     log.error("CCXT ingest failed %s/%s: %s", symbol, interval, exc)
 
 
+async def forex_daily_job() -> None:
+    """
+    Fetch and upsert daily OHLCV candles for all FOREX_SYMBOLS.
+
+    Runs once daily at startup/morning. Gracefully skips if ALPHA_VANTAGE_API_KEY
+    is not set (ForexProvider.fetch_latest returns [] with a warning log).
+    Individual symbol failures are caught — other pairs continue.
+    """
+    provider = ForexProvider(api_key=settings.ALPHA_VANTAGE_API_KEY)
+    async with async_session_factory() as session:
+        for symbol in FOREX_SYMBOLS:
+            try:
+                candles = await provider.fetch_latest(symbol, FOREX_INTERVAL)
+                if candles:
+                    await upsert_candles(session, candles)
+                    log.info("Forex ingest: %s → %d candles", symbol, len(candles))
+            except Exception as exc:
+                log.error("Forex ingest failed %s: %s", symbol, exc)
+
+
 # ---------------------------------------------------------------------------
 # APScheduler instance and FastAPI lifespan
 # ---------------------------------------------------------------------------
@@ -188,11 +211,18 @@ async def lifespan(app: FastAPI):
         replace_existing=True,
         misfire_grace_time=60,
     )
+    scheduler.add_job(
+        forex_daily_job,
+        IntervalTrigger(hours=24),
+        id="forex_daily",
+        replace_existing=True,
+        misfire_grace_time=3600,  # 1 hour grace — daily job can run late
+    )
 
     scheduler.start()
     log.info(
-        "Scheduler started — 6 jobs registered "
-        "(stock/5min, CoinGecko/30min, CCXT/15min, analysis/5min, paper_equity/5min, alerts/5min)"
+        "Scheduler started — 7 jobs registered "
+        "(stock/5min, CoinGecko/30min, CCXT/15min, analysis/5min, paper_equity/5min, alerts/5min, forex/24h)"
     )
 
     yield  # FastAPI serves requests here

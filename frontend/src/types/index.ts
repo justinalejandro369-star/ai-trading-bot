@@ -7,6 +7,13 @@ export interface Candle {
   volume?: number
 }
 
+export interface MultiframeAgreement {
+  '1H'?: string
+  '4H'?: string
+  '1D'?: string
+  agreement: boolean
+}
+
 export interface Signal {
   symbol: string
   interval: string
@@ -23,6 +30,8 @@ export interface Signal {
   adx_14: number | null
   atr_14: number | null
   reasons: string[]
+  explanation: string
+  multiframe_agreement: MultiframeAgreement
 }
 
 export interface PaperPosition {
