@@ -95,7 +95,13 @@ Plans:
   3. Portfolio view shows current paper positions, total P&L, and allocation breakdown
   4. Backtest results page renders an equity curve and performance metrics table
   5. Signal feed and chart prices update in real-time via WebSocket without a page refresh
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Backend auth + WebSocket (JWT httpOnly cookies, argon2, CORS, rate limiting, security headers, /ws/live)
+- [ ] 05-02-PLAN.md — Frontend scaffold (Vite+React+TS+Tailwind+shadcn, Landing page, Login, Dashboard shell, protected routes)
+- [ ] 05-03-PLAN.md — Dashboard pages (CandlestickChart v5, SignalFeed, PortfolioView, BacktestResults, WebSocket wiring)
+- [ ] 05-04-PLAN.md — Playwright E2E tests (auth flows, tab navigation, WebSocket mock, charts, mobile responsive)
 **UI hint**: yes
 
 ### Phase 6: Alerts and Education
@@ -132,6 +138,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 2. Analysis Engine | 3/3 | Complete   | 2026-04-08 |
 | 3. Backtesting Engine | 0/2 | Not started | - |
 | 4. Paper Trading Simulator | 2/2 | Complete   | 2026-04-08 |
-| 5. Dashboard | 0/? | Not started | - |
+| 5. Dashboard | 0/4 | Not started | - |
 | 6. Alerts and Education | 0/? | Not started | - |
 | 7. LLM Explanations and Market Expansion | 0/? | Not started | - |
