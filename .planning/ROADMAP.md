@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Analysis Engine** - Compute technical indicators and generate rule-based AI signals with scores (completed 2026-04-08)
 - [ ] **Phase 3: Backtesting Engine** - Validate signal quality against historical data with look-ahead bias prevention
 - [x] **Phase 4: Paper Trading Simulator** - Simulate trading with fake money against live data with P&L tracking (completed 2026-04-08)
-- [x] **Phase 5: Dashboard** - Web dashboard with charts, signal feed, portfolio view, and real-time updates (completed 2026-04-08)
+- [ ] **Phase 5: Dashboard** - Web dashboard with charts, signal feed, portfolio view, and real-time updates
 - [ ] **Phase 6: Alerts and Education** - Configurable alert channels and educational context for new traders
 - [ ] **Phase 7: LLM Explanations and Market Expansion** - LLM-powered signal reasoning, multi-timeframe correlation, and forex data
 
@@ -100,8 +100,8 @@ Plans:
 Plans:
 - [x] 05-01-PLAN.md — Backend auth + WebSocket (JWT httpOnly cookies, argon2, CORS, rate limiting, security headers, /ws/live)
 - [x] 05-02-PLAN.md — Frontend scaffold (Vite+React+TS+Tailwind+shadcn, Landing page, Login, Dashboard shell, protected routes)
-- [x] 05-03-PLAN.md — Dashboard pages (CandlestickChart v5, SignalFeed, PortfolioView, BacktestResults, WebSocket wiring)
-- [x] 05-04-PLAN.md — Playwright E2E tests (auth flows, tab navigation, WebSocket mock, charts, mobile responsive)
+- [ ] 05-03-PLAN.md — Dashboard pages (CandlestickChart v5, SignalFeed, PortfolioView, BacktestResults, WebSocket wiring)
+- [ ] 05-04-PLAN.md — Playwright E2E tests (auth flows, tab navigation, WebSocket mock, charts, mobile responsive)
 **UI hint**: yes
 
 ### Phase 6: Alerts and Education
@@ -138,6 +138,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 2. Analysis Engine | 3/3 | Complete   | 2026-04-08 |
 | 3. Backtesting Engine | 0/2 | Not started | - |
 | 4. Paper Trading Simulator | 2/2 | Complete   | 2026-04-08 |
-| 5. Dashboard | 4/4 | Complete   | 2026-04-08 |
+| 5. Dashboard | 2/4 | In Progress|  |
 | 6. Alerts and Education | 0/? | Not started | - |
 | 7. LLM Explanations and Market Expansion | 0/? | Not started | - |
