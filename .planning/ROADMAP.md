@@ -12,7 +12,7 @@ The system is built in strict dependency order: a robust data pipeline must exis
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Data Foundation** - Ingest and store normalized OHLCV data for stocks and crypto via free APIs
+- [x] **Phase 1: Data Foundation** - Ingest and store normalized OHLCV data for stocks and crypto via free APIs (completed 2026-04-08)
 - [ ] **Phase 2: Analysis Engine** - Compute technical indicators and generate rule-based AI signals with scores
 - [ ] **Phase 3: Backtesting Engine** - Validate signal quality against historical data with look-ahead bias prevention
 - [ ] **Phase 4: Paper Trading Simulator** - Simulate trading with fake money against live data with P&L tracking
@@ -37,7 +37,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-PLAN.md — Provider interface (OHLCVProvider ABC, OHLCVCandle), normalizers, TimescaleDB schema and Alembic migration
 - [x] 01-02-PLAN.md — yfinance, Finnhub WebSocket, CoinGecko, and CCXT provider implementations
-- [ ] 01-03-PLAN.md — APScheduler jobs, upsert layer, and GET /api/market-data endpoint
+- [x] 01-03-PLAN.md — APScheduler jobs, upsert layer, and GET /api/market-data endpoint
 
 ### Phase 2: Analysis Engine
 **Goal**: The system continuously scans stored market data, generates ranked trading signals with scores and template-based reasoning
@@ -115,7 +115,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Foundation | 2/3 | In Progress|  |
+| 1. Data Foundation | 3/3 | Complete   | 2026-04-08 |
 | 2. Analysis Engine | 0/? | Not started | - |
 | 3. Backtesting Engine | 0/? | Not started | - |
 | 4. Paper Trading Simulator | 0/? | Not started | - |
