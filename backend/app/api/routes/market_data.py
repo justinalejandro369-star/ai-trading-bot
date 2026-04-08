@@ -27,8 +27,8 @@ log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/market-data", tags=["market-data"])
 
-#: Whitelist of valid interval values. Any other value returns 422.
-VALID_INTERVALS: frozenset[str] = frozenset({"1m", "5m", "15m", "1H", "4H", "1D"})
+#: Whitelist of valid interval values (lowercase). Input is normalized to lowercase before validation.
+VALID_INTERVALS: frozenset[str] = frozenset({"1m", "5m", "15m", "1h", "4h", "1d"})
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
@@ -69,7 +69,8 @@ async def get_candles(
     Raises:
         HTTPException 422: If interval is not in VALID_INTERVALS
     """
-    if interval not in VALID_INTERVALS:
+    interval_norm = interval.lower()
+    if interval_norm not in VALID_INTERVALS:
         raise HTTPException(
             status_code=422,
             detail=(
@@ -83,7 +84,7 @@ async def get_candles(
         .where(
             and_(
                 MarketData.symbol == symbol.upper(),
-                MarketData.interval == interval,
+                MarketData.interval == interval_norm,
             )
         )
         .order_by(MarketData.timestamp.desc())

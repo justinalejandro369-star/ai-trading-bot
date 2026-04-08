@@ -37,7 +37,7 @@ __all__ = ["SCAN_INTERVAL", "scan_asset", "scan_all_assets", "analysis_scan_job"
 log = logging.getLogger(__name__)
 
 #: Primary timeframe for signal generation. Multi-timeframe deferred to Phase 7.
-SCAN_INTERVAL: str = "1D"
+SCAN_INTERVAL: str = "1d"
 
 #: Fetch slightly more candles than MIN_CANDLES to compute ATR SMA
 _FETCH_LIMIT: int = MIN_CANDLES + 20

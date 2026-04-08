@@ -15,11 +15,11 @@ interface Props {
 }
 
 export default function PnLPieChart({ positions }: Props) {
-  const totalValue = positions.reduce((sum, p) => sum + p.quantity * p.current_price, 0)
+  const totalValue = positions.reduce((sum, p) => sum + p.quantity * p.avg_entry_price, 0)
   const chartData = positions.map((p) => ({
     symbol: p.symbol,
-    value: p.quantity * p.current_price,
-    pct: totalValue > 0 ? ((p.quantity * p.current_price) / totalValue) * 100 : 0,
+    value: p.quantity * p.avg_entry_price,
+    pct: totalValue > 0 ? ((p.quantity * p.avg_entry_price) / totalValue) * 100 : 0,
   }))
 
   if (chartData.length === 0) {

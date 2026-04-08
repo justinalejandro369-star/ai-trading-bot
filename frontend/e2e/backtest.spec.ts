@@ -52,7 +52,8 @@ test.describe('Backtest Results', () => {
           win_rate: 0.62,
           profit_factor: 1.8,
           total_return: 0.15,
-          equity_curve: [{ time: 1714521600, equity: 10500 }],
+          total_trades: 5,
+          equity_curve: [['2026-04-08T00:00:00', 10500]],
         },
       })
     })
@@ -117,7 +118,8 @@ test.describe('Backtest Results', () => {
           win_rate: 0.55,
           profit_factor: 1.4,
           total_return: 0.08,
-          equity_curve: [{ time: 1714521600, equity: 10200 }],
+          total_trades: 3,
+          equity_curve: [['2026-04-08T00:00:00', 10200]],
         },
       })
     })

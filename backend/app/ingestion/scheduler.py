@@ -22,6 +22,7 @@ Error handling:
 """
 import logging
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -38,6 +39,7 @@ from app.ingestion.providers.coingecko_provider import CoinGeckoProvider, ingest
 from app.ingestion.providers.forex_provider import ForexProvider, FOREX_SYMBOLS, FOREX_INTERVAL
 from app.ingestion.providers.yfinance_provider import YfinanceProvider
 from app.ingestion.upsert import upsert_candles
+from app.models.paper_trading import PaperAccount
 
 __all__ = [
     "scheduler",
@@ -224,6 +226,21 @@ async def lifespan(app: FastAPI):
         "Scheduler started — 7 jobs registered "
         "(stock/5min, CoinGecko/30min, CCXT/15min, analysis/5min, paper_equity/5min, alerts/5min, forex/24h)"
     )
+
+    # Ensure a default paper account (id=1) exists so the UI works on first boot.
+    async with async_session_factory() as session:
+        existing = await session.get(PaperAccount, 1)
+        if existing is None:
+            session.add(PaperAccount(
+                name="Default",
+                created_at=datetime.now(timezone.utc),
+                starting_balance=100_000.0,
+                cash_balance=100_000.0,
+                slippage_std=0.001,
+                commission=0.001,
+            ))
+            await session.commit()
+            log.info("Created default paper account (id=1, balance=$100,000)")
 
     yield  # FastAPI serves requests here
 

@@ -42,27 +42,26 @@ def upgrade() -> None:
         );
     """)
 
-    # Convert to TimescaleDB hypertable partitioned by timestamp.
-    # chunk_time_interval of 7 days is appropriate for mixed 1m-1D OHLCV candles.
-    # Wrapped in try/except: TimescaleDB extension is not available in SQLite dev env.
-    try:
-        op.execute("""
-            SELECT create_hypertable(
-                'market_data',
-                'timestamp',
-                chunk_time_interval => INTERVAL '7 days',
-                if_not_exists => TRUE
-            );
-        """)
-    except sqlalchemy.exc.ProgrammingError as exc:
-        logger.warning(
-            "create_hypertable() failed — TimescaleDB extension not available "
-            "(expected in SQLite dev environment). "
-            "Plain table will be used. Error: %s",
-            exc,
-        )
-        # Rollback the savepoint created by the failed statement
-        op.execute("ROLLBACK TO SAVEPOINT alembic_hypertable_fallback")
+    # Convert to TimescaleDB hypertable — skip on SQLite (dev fallback).
+    bind = op.get_bind()
+    if bind.dialect.name != "sqlite":
+        try:
+            op.execute("""
+                SELECT create_hypertable(
+                    'market_data',
+                    'timestamp',
+                    chunk_time_interval => INTERVAL '7 days',
+                    if_not_exists => TRUE
+                );
+            """)
+        except (sqlalchemy.exc.ProgrammingError, sqlalchemy.exc.OperationalError) as exc:
+            logger.warning(
+                "create_hypertable() failed — TimescaleDB extension not available. "
+                "Plain table will be used. Error: %s",
+                exc,
+            )
+    else:
+        logger.info("SQLite detected — skipping create_hypertable()")
 
     # Composite index optimized for the query pattern:
     # WHERE symbol=X AND interval=Y AND timestamp BETWEEN a AND b

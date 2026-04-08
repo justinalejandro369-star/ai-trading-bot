@@ -25,11 +25,10 @@ export default function BacktestResults() {
     mutate({ symbol, interval, initial_cash: 10000, commission: 0.001, slippage_pct: 0.001 })
   }
 
-  // Map equity_curve to EquityCurveChart's expected shape
-  const equityCurveData = result?.equity_curve.map((pt) => ({
-    recorded_at: new Date(pt.time * 1000).toISOString(),
-    equity: pt.equity,
-  })) ?? []
+  // Backend returns equity_curve as [[iso_string, value], ...] tuples
+  const equityCurveData = (result?.equity_curve as unknown as [string, number][] ?? []).map(
+    ([ts, equity]) => ({ recorded_at: ts, equity })
+  )
 
   return (
     <div data-testid="backtest-results" className="space-y-6">
@@ -45,7 +44,7 @@ export default function BacktestResults() {
             value={symbol}
             onChange={(e) => setSymbol(e.target.value.toUpperCase())}
             className="w-28 bg-slate-800 border-slate-600 text-slate-100"
-            placeholder="AAPL"
+            placeholder="Symbol"
           />
         </div>
         <div className="space-y-1">

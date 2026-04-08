@@ -95,7 +95,7 @@ async def run_backtest_endpoint(
     Raises:
         HTTPException 422: If fewer than MIN_CANDLES candle rows are available.
     """
-    df = await _load_candles_df(session, request.symbol, request.interval)
+    df = await _load_candles_df(session, request.symbol, request.interval.lower())
 
     if df is None or len(df) == 0:
         raise HTTPException(

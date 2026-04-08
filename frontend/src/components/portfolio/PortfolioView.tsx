@@ -49,8 +49,8 @@ export default function PortfolioView() {
     )
   }
 
-  const pnl = account.balance - account.initial_balance
-  const returnPct = ((pnl / account.initial_balance) * 100).toFixed(2)
+  const pnl = account.total_equity - account.starting_balance
+  const returnPct = ((pnl / account.starting_balance) * 100).toFixed(2)
 
   return (
     <div data-testid="portfolio-view" className="space-y-6">
@@ -58,9 +58,9 @@ export default function PortfolioView() {
       <div className="grid grid-cols-3 gap-4">
         <Card className="bg-slate-800 border-slate-700">
           <CardContent className="pt-4">
-            <div className="text-xs text-slate-500 mb-1">Balance</div>
+            <div className="text-xs text-slate-500 mb-1">Cash Balance</div>
             <div className="text-xl font-bold text-slate-100">
-              ${account.balance.toLocaleString()}
+              ${account.cash_balance.toLocaleString()}
             </div>
           </CardContent>
         </Card>
@@ -85,7 +85,7 @@ export default function PortfolioView() {
       {/* Positions table */}
       <div>
         <h3 className="text-sm font-semibold text-slate-300 mb-2">Open Positions</h3>
-        {account.positions.length === 0 ? (
+        {account.open_positions.length === 0 ? (
           <div className="flex items-center justify-center h-20 bg-slate-800 rounded-lg border border-slate-700">
             <p className="text-slate-500 text-sm">No open positions</p>
           </div>
@@ -96,30 +96,17 @@ export default function PortfolioView() {
                 <TableRow className="border-slate-700 hover:bg-transparent">
                   <TableHead className="text-slate-400">Symbol</TableHead>
                   <TableHead className="text-slate-400">Qty</TableHead>
-                  <TableHead className="text-slate-400">Avg Price</TableHead>
-                  <TableHead className="text-slate-400">Current</TableHead>
-                  <TableHead className="text-slate-400">P&amp;L</TableHead>
-                  <TableHead className="text-slate-400">%</TableHead>
+                  <TableHead className="text-slate-400">Avg Entry</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {account.positions.map((pos) => {
-                  const posPct = ((pos.pnl / (pos.avg_price * pos.quantity)) * 100).toFixed(2)
-                  return (
-                    <TableRow key={pos.symbol} className="border-slate-700">
-                      <TableCell className="text-slate-100 font-medium">{pos.symbol}</TableCell>
-                      <TableCell className="text-slate-300">{pos.quantity}</TableCell>
-                      <TableCell className="text-slate-300">${pos.avg_price.toFixed(2)}</TableCell>
-                      <TableCell className="text-slate-300">${pos.current_price.toFixed(2)}</TableCell>
-                      <TableCell className={colorPnl(pos.pnl)}>
-                        {pos.pnl >= 0 ? '+' : ''}${pos.pnl.toFixed(2)}
-                      </TableCell>
-                      <TableCell className={colorPnl(pos.pnl)}>
-                        {pos.pnl >= 0 ? '+' : ''}{posPct}%
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                {account.open_positions.map((pos) => (
+                  <TableRow key={pos.symbol} className="border-slate-700">
+                    <TableCell className="text-slate-100 font-medium">{pos.symbol}</TableCell>
+                    <TableCell className="text-slate-300">{pos.quantity}</TableCell>
+                    <TableCell className="text-slate-300">${pos.avg_entry_price.toFixed(2)}</TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
@@ -137,7 +124,7 @@ export default function PortfolioView() {
         <div>
           <h3 className="text-sm font-semibold text-slate-300 mb-2">Allocation</h3>
           <div className="bg-slate-800 rounded-lg border border-slate-700 p-3">
-            <PnLPieChart positions={account.positions} />
+            <PnLPieChart positions={account.open_positions} />
           </div>
         </div>
       </div>

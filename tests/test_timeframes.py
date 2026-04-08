@@ -180,12 +180,14 @@ async def override_get_session() -> AsyncSession:
 
 
 def _get_test_client():
-    """Return a configured TestClient with DB override applied."""
+    """Return a configured TestClient with DB and auth overrides applied."""
     from fastapi.testclient import TestClient
     from app.main import app
     from app.api.routes.market_data import get_session
+    from app.core.auth import get_current_user
 
     app.dependency_overrides[get_session] = override_get_session
+    app.dependency_overrides[get_current_user] = lambda: {"sub": "test_user"}
     return TestClient(app)
 
 

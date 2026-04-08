@@ -36,18 +36,18 @@ export interface Signal {
 
 export interface PaperPosition {
   symbol: string
+  interval: string
   quantity: number
-  avg_price: number
-  current_price: number
-  pnl: number
+  avg_entry_price: number
 }
 
 export interface PaperAccount {
   id: number
   name: string
-  balance: number
-  initial_balance: number
-  positions: PaperPosition[]
+  cash_balance: number
+  starting_balance: number
+  total_equity: number
+  open_positions: PaperPosition[]
 }
 
 export interface EquityPoint {
@@ -61,5 +61,6 @@ export interface BacktestResult {
   win_rate: number
   profit_factor: number
   total_return: number
-  equity_curve: { time: number; equity: number }[]
+  total_trades: number
+  equity_curve: [string, number][]
 }

@@ -6,7 +6,10 @@ export async function getAccount(id: number): Promise<PaperAccount> {
 }
 
 export async function getEquityCurve(id: number): Promise<EquityPoint[]> {
-  return apiGet<EquityPoint[]>(`/api/paper/accounts/${id}/equity`)
+  const res = await apiGet<{ account_id: number; equity_curve: [string, number][] }>(
+    `/api/paper/accounts/${id}/equity`
+  )
+  return res.equity_curve.map(([recorded_at, equity]) => ({ recorded_at, equity }))
 }
 
 export async function getCompare(id: number): Promise<Record<string, number>> {

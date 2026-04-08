@@ -20,36 +20,47 @@ const SIGNALS_MOCK = [
   },
 ]
 
+// Backend returns ISO timestamp strings; api/market.ts converts to Unix seconds for the chart
 const CANDLES_MOCK = [
-  { time: 1714608000, open: 172, high: 173, low: 171, close: 172.5 },
-  { time: 1714521600, open: 170, high: 172, low: 169, close: 171.8 },
+  { timestamp: '2026-04-08T00:00:00', open: 172, high: 173, low: 171, close: 172.5, volume: 1000000 },
+  { timestamp: '2026-04-07T00:00:00', open: 170, high: 172, low: 169, close: 171.8, volume: 950000 },
 ]
 
+// Field names match the backend's GET /api/paper/accounts/{id} response
 const ACCOUNT_MOCK = {
   id: 1,
   name: 'Paper Account',
-  balance: 95000,
-  initial_balance: 100000,
-  positions: [
+  cash_balance: 95000,
+  starting_balance: 100000,
+  total_equity: 95000,
+  slippage_std: 0.001,
+  commission: 0.001,
+  backtest_run_id: null,
+  open_positions: [
     {
       symbol: 'AAPL',
+      interval: '1d',
       quantity: 10,
-      avg_price: 170,
-      current_price: 172,
-      pnl: 20,
+      avg_entry_price: 170,
     },
   ],
 }
 
-const EQUITY_MOCK = [{ recorded_at: '2026-04-08T12:00:00', equity: 95200 }]
+// Backend returns { account_id, equity_curve: [[iso_string, value], ...] }
+const EQUITY_MOCK = {
+  account_id: 1,
+  equity_curve: [['2026-04-08T12:00:00', 95200]],
+}
 
+// equity_curve is [[iso_string, value], ...] tuples (matches _serialize_equity in engine.py)
 const BACKTEST_MOCK = {
   sharpe_ratio: 1.2,
   max_drawdown: -0.08,
   win_rate: 0.62,
   profit_factor: 1.8,
   total_return: 0.15,
-  equity_curve: [{ time: 1714521600, equity: 10500 }],
+  total_trades: 5,
+  equity_curve: [['2026-04-08T00:00:00', 10500]],
 }
 
 export async function mockBackend(page: Page): Promise<void> {
