@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./dev.db"
     FINNHUB_API_KEY: str = ""
     COINGECKO_API_KEY: str = ""
+    ALPHA_VANTAGE_API_KEY: str = ""
 
     # Auth settings
     jwt_secret: str = Field("dev-secret-change-in-prod", alias="JWT_SECRET")
@@ -28,6 +29,10 @@ class Settings(BaseSettings):
     telegram_bot_token: str = Field("", alias="TELEGRAM_BOT_TOKEN")
     telegram_chat_id: str = Field("", alias="TELEGRAM_CHAT_ID")
     discord_webhook_url: str = Field("", alias="DISCORD_WEBHOOK_URL")
+
+    # LLM settings (Phase 7) — disabled by default; set OPENAI_API_KEY to enable
+    openai_api_key: str = Field("", alias="OPENAI_API_KEY")
+    llm_enabled: bool = Field(False, alias="LLM_ENABLED")
 
 
 settings = Settings()

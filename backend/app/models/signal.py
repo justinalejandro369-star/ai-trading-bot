@@ -8,7 +8,7 @@ Imports Base from market_data to share the same declarative registry.
 import json
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Float, Integer, String
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text
 
 from app.models.market_data import Base
 
@@ -21,24 +21,30 @@ class TradingSignal(Base):
 
     Upserted on every scan — one row per asset, always reflects the most
     recent analysis. Signal history is out of scope for Phase 2.
+
+    Phase 7 additions:
+      - explanation: cached LLM plain-language explanation (empty when LLM disabled)
+      - multiframe_agreement: JSON dict of {interval: direction, agreement: bool}
     """
     __tablename__ = "signals"
 
-    symbol       = Column(String(20),             nullable=False, primary_key=True)
-    interval     = Column(String(5),              nullable=False, primary_key=True)
-    scanned_at   = Column(DateTime(timezone=True), nullable=False)
-    direction    = Column(String(4),              nullable=False)   # BUY|SELL|HOLD
-    confidence   = Column(Integer,               nullable=False)   # 0-100
-    regime       = Column(String(10),             nullable=False)   # trending|ranging|volatile
-    close        = Column(Float,                 nullable=False)
-    entry_price  = Column(Float,                 nullable=True)
-    stop_loss    = Column(Float,                 nullable=True)
-    target_price = Column(Float,                 nullable=True)
-    rsi_14       = Column(Float,                 nullable=True)
-    macd_val     = Column(Float,                 nullable=True)
-    adx_14       = Column(Float,                 nullable=True)
-    atr_14       = Column(Float,                 nullable=True)
-    reasons      = Column(String(500),            nullable=True)    # JSON list serialized as string
+    symbol                = Column(String(20),             nullable=False, primary_key=True)
+    interval              = Column(String(5),              nullable=False, primary_key=True)
+    scanned_at            = Column(DateTime(timezone=True), nullable=False)
+    direction             = Column(String(4),              nullable=False)   # BUY|SELL|HOLD
+    confidence            = Column(Integer,               nullable=False)   # 0-100
+    regime                = Column(String(10),             nullable=False)   # trending|ranging|volatile
+    close                 = Column(Float,                 nullable=False)
+    entry_price           = Column(Float,                 nullable=True)
+    stop_loss             = Column(Float,                 nullable=True)
+    target_price          = Column(Float,                 nullable=True)
+    rsi_14                = Column(Float,                 nullable=True)
+    macd_val              = Column(Float,                 nullable=True)
+    adx_14                = Column(Float,                 nullable=True)
+    atr_14                = Column(Float,                 nullable=True)
+    reasons               = Column(String(500),            nullable=True)    # JSON list serialized as string
+    explanation           = Column(Text,                  nullable=True, default="")   # LLM explanation (Phase 7)
+    multiframe_agreement  = Column(Text,                  nullable=True, default="{}")  # JSON dict (Phase 7)
 
     def reasons_list(self) -> list[str]:
         """Deserialize reasons JSON string to list."""
@@ -48,3 +54,12 @@ class TradingSignal(Base):
             return json.loads(self.reasons)
         except (json.JSONDecodeError, TypeError):
             return []
+
+    def multiframe_dict(self) -> dict:
+        """Deserialize multiframe_agreement JSON string to dict."""
+        if self.multiframe_agreement is None:
+            return {"agreement": False}
+        try:
+            return json.loads(self.multiframe_agreement)
+        except (json.JSONDecodeError, TypeError):
+            return {"agreement": False}

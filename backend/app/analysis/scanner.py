@@ -23,7 +23,9 @@ import pandas_ta_classic as ta
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.analysis.explainer import generate_explanation
 from app.analysis.indicators import MIN_CANDLES, IndicatorSet, compute_indicators
+from app.analysis.multiframe import compute_multiframe_agreement
 from app.analysis.regime import detect_regime
 from app.analysis.signals import score_signal
 from app.core.database import async_session_factory
@@ -99,6 +101,18 @@ async def scan_asset(
     regime = detect_regime(ind, atr_sma_20=atr_sma_20)
     signal = score_signal(ind)
 
+    # Phase 7: generate LLM explanation (gracefully disabled if llm_enabled=False)
+    explanation = await generate_explanation(
+        symbol=symbol,
+        direction=signal.direction,
+        confidence=signal.confidence,
+        ind=ind,
+        reasons=signal.reasons,
+    )
+
+    # Phase 7: compute multi-timeframe agreement (reads existing DB signals)
+    multiframe = await compute_multiframe_agreement(symbol, session)
+
     now = datetime.now(tz=timezone.utc)
 
     # Upsert: ON CONFLICT DO UPDATE refreshes the signal on every scan
@@ -107,25 +121,29 @@ async def scan_asset(
             INSERT INTO signals
                 (symbol, interval, scanned_at, direction, confidence, regime,
                  close, entry_price, stop_loss, target_price,
-                 rsi_14, macd_val, adx_14, atr_14, reasons)
+                 rsi_14, macd_val, adx_14, atr_14, reasons,
+                 explanation, multiframe_agreement)
             VALUES
                 (:symbol, :interval, :scanned_at, :direction, :confidence, :regime,
                  :close, :entry_price, :stop_loss, :target_price,
-                 :rsi_14, :macd_val, :adx_14, :atr_14, :reasons)
+                 :rsi_14, :macd_val, :adx_14, :atr_14, :reasons,
+                 :explanation, :multiframe_agreement)
             ON CONFLICT (symbol, interval) DO UPDATE SET
-                scanned_at   = excluded.scanned_at,
-                direction    = excluded.direction,
-                confidence   = excluded.confidence,
-                regime       = excluded.regime,
-                close        = excluded.close,
-                entry_price  = excluded.entry_price,
-                stop_loss    = excluded.stop_loss,
-                target_price = excluded.target_price,
-                rsi_14       = excluded.rsi_14,
-                macd_val     = excluded.macd_val,
-                adx_14       = excluded.adx_14,
-                atr_14       = excluded.atr_14,
-                reasons      = excluded.reasons
+                scanned_at            = excluded.scanned_at,
+                direction             = excluded.direction,
+                confidence            = excluded.confidence,
+                regime                = excluded.regime,
+                close                 = excluded.close,
+                entry_price           = excluded.entry_price,
+                stop_loss             = excluded.stop_loss,
+                target_price          = excluded.target_price,
+                rsi_14                = excluded.rsi_14,
+                macd_val              = excluded.macd_val,
+                adx_14                = excluded.adx_14,
+                atr_14                = excluded.atr_14,
+                reasons               = excluded.reasons,
+                explanation           = excluded.explanation,
+                multiframe_agreement  = excluded.multiframe_agreement
         """),
         {
             "symbol": symbol,
@@ -143,6 +161,8 @@ async def scan_asset(
             "adx_14": ind.adx_14,
             "atr_14": ind.atr_14,
             "reasons": json.dumps(signal.reasons),
+            "explanation": explanation,
+            "multiframe_agreement": json.dumps(multiframe),
         },
     )
     await session.commit()
@@ -172,6 +192,8 @@ async def scan_asset(
         adx_14=ind.adx_14,
         atr_14=ind.atr_14,
         reasons=json.dumps(signal.reasons),
+        explanation=explanation,
+        multiframe_agreement=json.dumps(multiframe),
     )
 
 

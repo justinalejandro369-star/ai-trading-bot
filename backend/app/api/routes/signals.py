@@ -49,6 +49,8 @@ def _serialize(row: TradingSignal) -> dict:
         "adx_14": row.adx_14,
         "atr_14": row.atr_14,
         "reasons": row.reasons_list(),
+        "explanation": row.explanation or "",
+        "multiframe_agreement": row.multiframe_dict(),
     }
 
 
