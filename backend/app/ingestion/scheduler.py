@@ -3,10 +3,12 @@ APScheduler job definitions and FastAPI lifespan hook.
 
 Design:
 - AsyncIOScheduler runs in the same event loop as FastAPI.
-- Three recurring jobs:
+- Five recurring jobs:
   1. stock_incremental_job — every 5 min: yfinance OHLCV for STOCK_WATCHLIST
   2. crypto_coingecko_job — every 30 min: CoinGecko 4H candles for top-5 coins
   3. crypto_ccxt_job — every 15 min: CCXT Binance OHLCV for CCXT_CRYPTO_SYMBOLS
+  4. analysis_scan_job — every 5 min: rule-based signal scan
+  5. equity_snapshot_job — every 5 min: paper trading equity snapshots (max_instances=1)
 
 Scheduler choice (from STATE.md decision):
   APScheduler (not Celery+Redis) is used by deliberate Phase 1 decision.
@@ -27,6 +29,7 @@ from fastapi import FastAPI
 
 from app.analysis.scanner import analysis_scan_job
 from app.core.database import async_session_factory
+from app.paper_trading.snapshot import equity_snapshot_job
 from app.core.watchlists import CCXT_CRYPTO_SYMBOLS, CCXT_INTERVALS, STOCK_INTERVALS, STOCK_WATCHLIST
 from app.ingestion.providers.ccxt_provider import CCXTProvider
 from app.ingestion.providers.coingecko_provider import CoinGeckoProvider, ingest_all_coins
@@ -44,6 +47,7 @@ __all__ = [
     "crypto_coingecko_job",
     "crypto_ccxt_job",
     "analysis_scan_job",
+    "equity_snapshot_job",
 ]
 
 log = logging.getLogger(__name__)
@@ -131,11 +135,12 @@ async def lifespan(app: FastAPI):
     """
     FastAPI lifespan context manager: start and stop the APScheduler.
 
-    Four jobs are registered:
+    Five jobs are registered:
     - stock_incremental_job: every 5 minutes
     - crypto_coingecko_job: every 30 minutes
     - crypto_ccxt_job: every 15 minutes
     - analysis_scan_job: every 5 minutes (runs after data ingestion)
+    - equity_snapshot_job: every 5 minutes (max_instances=1, paper equity snapshots)
 
     misfire_grace_time prevents job pile-up if a run is delayed (e.g., during startup).
     """
@@ -167,9 +172,20 @@ async def lifespan(app: FastAPI):
         replace_existing=True,
         misfire_grace_time=60,
     )
+    scheduler.add_job(
+        equity_snapshot_job,
+        IntervalTrigger(minutes=5),
+        id="paper_equity_snapshot",
+        replace_existing=True,
+        misfire_grace_time=60,
+        max_instances=1,  # prevents duplicate snapshots if job runs long
+    )
 
     scheduler.start()
-    log.info("Scheduler started — 4 jobs registered (stock/5min, CoinGecko/30min, CCXT/15min, analysis/5min)")
+    log.info(
+        "Scheduler started — 5 jobs registered "
+        "(stock/5min, CoinGecko/30min, CCXT/15min, analysis/5min, paper_equity/5min)"
+    )
 
     yield  # FastAPI serves requests here
 

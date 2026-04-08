@@ -7,6 +7,7 @@ Wires together:
 - Indicators REST router (from api/routes/indicators.py)  [Phase 2]
 - Signals REST router (from api/routes/signals.py)        [Phase 2]
 - Backtesting REST router (from api/routes/backtest.py)   [Phase 3]
+- Paper trading REST router (from api/routes/paper_trading.py) [Phase 4]
 
 Start with: uvicorn app.main:app --reload
 """
@@ -18,6 +19,7 @@ from app.api.routes.market_data import router as market_data_router
 from app.api.routes.indicators import router as indicators_router
 from app.api.routes.signals import router as signals_router
 from app.api.routes.backtest import router as backtest_router
+from app.api.routes.paper_trading import router as paper_trading_router
 from app.ingestion.scheduler import lifespan
 
 __all__ = ["app"]
@@ -27,8 +29,8 @@ log = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Trading Bot API",
-    description="AI-powered trading assistant — data ingestion, market data, signals, and backtesting API.",
-    version="0.3.0",
+    description="AI-powered trading assistant — data ingestion, market data, signals, backtesting, and paper trading API.",
+    version="0.4.0",
     lifespan=lifespan,
 )
 
@@ -36,3 +38,4 @@ app.include_router(market_data_router, prefix="/api")
 app.include_router(indicators_router, prefix="/api")
 app.include_router(signals_router, prefix="/api")
 app.include_router(backtest_router, prefix="/api")
+app.include_router(paper_trading_router, prefix="/api")
