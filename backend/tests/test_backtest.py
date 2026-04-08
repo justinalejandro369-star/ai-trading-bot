@@ -115,14 +115,18 @@ def test_shift1_prevents_look_ahead_bias():
     properly shifted honest signals. If honest > biased the shift is broken.
 
     Uses a large df (500 bars) to ensure statistical signal.
+
+    True look-ahead bias: biased signal uses shift(-1) to peek at next bar's
+    close before placing order at bar T. Honest signal delays by 1 bar via
+    shift(1). The biased strategy must outperform because it knows the future.
     """
     import vectorbt as vbt
 
     df = make_ohlcv_df(500, seed=7)
 
-    # Perfect-information: signal at bar T uses bar T's close (CHEATING)
-    biased_entries = (df["close"] > df["close"].shift(1)).fillna(False).astype(bool)
-    biased_exits   = (df["close"] < df["close"].shift(1)).fillna(False).astype(bool)
+    # Perfect-information: buy at T if close[T+1] > close[T] (CHEATING — uses future)
+    biased_entries = (df["close"].shift(-1) > df["close"]).fillna(False).astype(bool)
+    biased_exits   = (df["close"].shift(-1) < df["close"]).fillna(False).astype(bool)
     pf_biased = vbt.Portfolio.from_signals(
         df["close"], biased_entries, biased_exits, freq="1D"
     )
