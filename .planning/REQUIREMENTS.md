@@ -9,8 +9,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Data Ingestion
 
-- [ ] **DATA-01**: System ingests US stock OHLCV data via yfinance with Finnhub WebSocket for real-time updates
-- [ ] **DATA-02**: System ingests crypto data (BTC, ETH, top altcoins) via CoinGecko API
+- [x] **DATA-01**: System ingests US stock OHLCV data via yfinance with Finnhub WebSocket for real-time updates
+- [x] **DATA-02**: System ingests crypto data (BTC, ETH, top altcoins) via CoinGecko API
 - [ ] **DATA-03**: System supports multiple timeframes (1m, 5m, 15m, 1H, 4H, 1D candles)
 - [x] **DATA-04**: Data provider abstraction layer allows swapping sources without code changes
 - [x] **DATA-05**: System stores historical OHLCV data in TimescaleDB for fast time-series queries
@@ -106,8 +106,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
+| DATA-02 | Phase 1 | Complete |
 | DATA-03 | Phase 1 | Pending |
 | DATA-04 | Phase 1 | Complete |
 | DATA-05 | Phase 1 | Complete |
