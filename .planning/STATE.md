@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Roadmap created — all files written, ready to begin Phase 1 planning
-last_updated: "2026-04-07T02:33:04.451Z"
-last_activity: 2026-04-07 -- Phase 1 planning complete
+stopped_at: Completed 01-data-foundation/01-01-PLAN.md
+last_updated: "2026-04-08T05:12:58.068Z"
+last_activity: 2026-04-08
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Surface high-quality trading opportunities with clear reasoning and win-rate tracking, so users make informed decisions faster than manual scanning.
-**Current focus:** Phase 1 — Data Foundation
+**Current focus:** Phase 01 — data-foundation
 
 ## Current Position
 
-Phase: 1 of 7 (Data Foundation)
-Plan: 0 of ? in current phase
+Phase: 01 (data-foundation) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-04-07 -- Phase 1 planning complete
+Last activity: 2026-04-08
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -52,6 +52,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 01-data-foundation P01 | 4 | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,9 @@ Recent decisions affecting current work:
 - Init: LLM explanations deferred to Phase 7 — validate rule-based signals first
 - Init: Forex deferred to Phase 7 — Alpha Vantage free tier too rate-limited for intraday
 - Init: CoinGecko 10,000 calls/month cap requires aggressive local caching for multi-coin scanning
+- [Phase 01-data-foundation]: normalize_coingecko() sets volume=0.0 — CoinGecko OHLC endpoint has no volume field; future enhancement joins with market_chart endpoint
+- [Phase 01-data-foundation]: Alembic migration uses raw SQL op.execute() — create_hypertable() must be called post-table-creation as a TimescaleDB extension function
+- [Phase 01-data-foundation]: alembic/env.py converts asyncpg URLs to psycopg2 for migration execution — asyncpg is runtime-only, Alembic requires synchronous database access
 
 ### Pending Todos
 
@@ -81,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06
-Stopped at: Roadmap created — all files written, ready to begin Phase 1 planning
+Last session: 2026-04-08T05:12:58.066Z
+Stopped at: Completed 01-data-foundation/01-01-PLAN.md
 Resume file: None
