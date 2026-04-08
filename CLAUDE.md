@@ -16,127 +16,309 @@ An AI-powered trading assistant that scans multiple financial markets (stocks, c
 <!-- GSD:project-end -->
 
 <!-- GSD:stack-start source:research/STACK.md -->
-## Technology Stack
+## Technology Stack (Implemented)
 
-## Recommended Stack
-### Core Technologies
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Python | 3.11+ | Backend runtime | Finance/ML ecosystem is Python-first; every serious trading library is Python-native. 3.11 gives measurable speed gains over 3.10 and is the current LTS-stable choice. |
-| FastAPI | 0.115+ | API server + WebSocket server | Async-first, built-in WebSocket support for real-time price streaming, automatic OpenAPI docs, Pydantic validation. Used by Freqtrade's REST API layer — battle-tested for this domain. |
-| Uvicorn | 0.30+ | ASGI server | Required by FastAPI; single-worker for dev, multi-worker via `uvicorn --workers N` for production. |
-| React | 18+ | Frontend UI | Proven ecosystem for dashboards; TradingView Lightweight Charts has a first-class React integration. Vite beats Next.js for this use-case (see below). |
-| Vite | 5+ | Frontend build tool | Sub-second HMR, zero-config TypeScript, smallest bundles. Trading dashboards are authenticated SPAs — no SEO required, no need for Next.js SSR overhead. |
-| TypeScript | 5+ | Frontend language | Type safety for complex chart/portfolio state. Adds ~0 runtime cost with Vite. |
-| Redis | 7.2+ | Task queue broker + pub/sub | Message broker for Celery background tasks; pub/sub channel for broadcasting live price ticks to WebSocket clients. Redis 7+ Sentinel handles failover. |
-| Celery | 5.4+ | Background task queue | Schedules recurring market scans (every 5 min, hourly, etc.), runs backtests asynchronously, handles rate-limited API fetching without blocking the web tier. |
-| SQLite (dev) / PostgreSQL 16+ (prod) | — | Persistent storage | Trade history, AI suggestions, win-rate stats, paper portfolio positions. SQLAlchemy 2.0 ORM lets you run SQLite locally and promote to Postgres without query rewrites. SQLite is what Freqtrade uses by default — proven for this domain. |
-| SQLAlchemy | 2.0+ | ORM | Declarative models, async session support with FastAPI, single codebase for SQLite/Postgres swap. |
-### Data Layer — Free Sources
-| Source | Markets | Constraints | Python Library |
-|--------|---------|-------------|----------------|
-| **yfinance** | Stocks (OHLCV, fundamentals, options chains) | Unofficial scraper; fragile, rate-limited. Reliable for daily/weekly historical data. NOT suitable for real-time polling every few seconds. | `yfinance` (0.2+) |
-| **Alpha Vantage** | Stocks, Forex, Crypto, technical indicators | Free tier: 25 requests/day (severely limited). Upgrade to 500 req/day free plan with email signup. Best backup for yfinance gaps. | `alpha_vantage` or raw `httpx` |
-| **Finnhub** | US stocks real-time (60 calls/min free), crypto | Most generous free real-time tier. WebSocket feed available for free. Use for live price ticks. | `finnhub-python` or `websockets` |
-| **CoinGecko** | Crypto (18,000+ coins) | Free Demo plan: 10,000 calls/month, 1 year history. Best free crypto source by coverage. | `pycoingecko` |
-| **CCXT** | Crypto (100+ exchanges) | MIT license, free forever. Use for exchange OHLCV data, order books. Covers Binance, Coinbase, Kraken. | `ccxt` (4+) |
-| **Alpha Vantage (FX)** | Forex (major pairs) | 500 req/day free tier covers daily FX rates. Intraday FX is rate-limited hard. | `alpha_vantage` |
-- **Stocks first** — best free data coverage (yfinance + Finnhub), most familiar to new traders
-- **Crypto second** — excellent free data (CoinGecko + CCXT), active API ecosystem
-- **Forex third** — Alpha Vantage covers it, but free tier limits realtime use
-- **Options last** — Free options chain data exists (yfinance), but greeks/IV calculations require extra work; highest complexity for a beginner trader
-### AI / Signal Generation Layer
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **OpenAI API** (gpt-4o-mini) | latest | LLM reasoning for signal explanations, trade rationale | gpt-4o-mini at ~$0.15/1M input tokens is cheap enough for a dev-stage bot. Generates human-readable "why" explanations — the core educational value prop. |
-| **LangChain** | 0.3+ | LLM orchestration, RAG pipelines, agent chains | Standard Python library for chaining LLM calls with tool use; used in TradingAgents framework. Handles prompt templates, context injection, memory. |
-| **pandas-ta** | 0.3.14b | Technical indicators (150+) | Pure Python, integrates natively with pandas DataFrames. No C compilation required (unlike TA-Lib). Covers RSI, MACD, Bollinger Bands, ATR, Stochastic — everything needed for signal generation. |
-| **pandas** | 2.2+ | Data manipulation, OHLCV processing | Industry standard; every data source returns DataFrames. |
-| **numpy** | 1.26+ | Numerical computation | Foundation for pandas and vectorbt. |
-| **scikit-learn** | 1.5+ | Feature engineering helpers, optional ML signals | For future pattern detection; not needed for LLM-first MVP but import-ready. |
-### Backtesting Layer
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **vectorbt** | 0.26+ | Backtesting engine | Fastest Python backtester — NumPy/Numba vectorized, handles years of minute-level data in seconds. Active development (1.2.0 added tick-level resolution, Oct 2025). Better choice than Backtrader for the data volumes this bot will generate. |
-| **Backtesting.py** | 0.3+ | Simple strategy prototyping | Beginner-friendly fallback if vectorbt's API proves complex. Useful for validating single-asset strategies quickly. |
-### Frontend Libraries
-| Library | Version | Purpose | Why |
-|---------|---------|---------|-----|
-| **TradingView Lightweight Charts** | 4+ | OHLCV candlestick + line charts | Free, open-source, MIT license. Renders 100k+ bars smoothly in browser. Official React integration. Industry standard for web trading UIs. |
-| **TanStack Query** | 5+ | Server state management, REST data fetching | Handles caching, background refetching, loading/error states for REST endpoints. |
-| **Zustand** | 4+ | Frontend state management | Lightweight alternative to Redux; sufficient for portfolio state, alert state. |
-| **Tailwind CSS** | 3+ | Styling | Utility-first; fast to build dense data-heavy dashboards. Standard choice for 2025 React apps. |
-| **shadcn/ui** | latest | UI component library | Built on Radix UI + Tailwind. Pre-built tables, cards, dropdowns — critical for dashboard screens. Copies components into your codebase (no runtime dependency). |
-| **Recharts** | 2+ | Secondary charts (performance curves, win-rate graphs) | React-native charting for non-OHLCV data (portfolio value over time, win/loss breakdown). Lighter than Chart.js for simple charts. |
-### Development Tools
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| **Docker + Docker Compose** | Container orchestration | Single `docker-compose up` starts API, Redis, Celery worker, Postgres. Critical for reproducibility. |
-| **Poetry** or **uv** | Python dependency management | uv is the 2025 standard — 10-100x faster than pip. Poetry is still widely used. Either works; uv is recommended for greenfield. |
-| **pytest** | Backend testing | Standard Python test runner. Use `pytest-asyncio` for FastAPI endpoint tests. |
-| **Alembic** | Database migrations | SQLAlchemy companion for schema versioning. Lets you evolve the DB schema as features are added. |
-| **Flower** | Celery task monitoring | Web UI at `localhost:5555` showing queued/active/failed tasks. Essential for debugging market scan jobs. |
-| **pre-commit** | Code quality hooks | ruff (linting + formatting) + mypy (type checking) as pre-commit hooks. |
-| **ruff** | Python linting + formatting | Replaces flake8 + black + isort; 10-100x faster than legacy tools. 2025 standard. |
-## Installation
-# Python backend — using uv
-# Frontend — using Vite + React + TypeScript
-# Infrastructure — Docker Compose
-# docker-compose.yml includes: postgres, redis, api, celery-worker, flower
-## Alternatives Considered
-| Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|-------------------------|
-| React + Vite | Next.js 15 | Only if you need SSR, public-facing SEO pages, or marketing site alongside the dashboard |
-| React + Vite | Streamlit | Only for internal prototype/demo — terrible DX for real-time WebSocket UIs, not suitable for production dashboard |
-| vectorbt | Backtrader | If strategies are simple event-driven (single asset, small data) and you prefer its cleaner API; acceptable for swing-only strategies |
-| FastAPI | Django + DRF | If team has existing Django expertise; FastAPI's async + WebSocket support is materially better for real-time trading data |
-| FastAPI | Flask | Flask has no native async or WebSocket support; avoid for a real-time system |
-| Celery + Redis | APScheduler | APScheduler is fine for simple cron-style scheduling but lacks Celery's retry logic, task inspection, and horizontal scaling |
-| pandas-ta | TA-Lib | If you need maximum performance on very large datasets and are willing to manage C compilation across environments |
-| OpenAI API | Anthropic Claude API | Comparable quality; gpt-4o-mini is cheaper than comparable Claude Haiku for this use-case; swap is trivial since LangChain abstracts the provider |
-| OpenAI API | Ollama (local) | Zero cost — valid for dev/demo; lower quality financial reasoning; swap is trivial if API is designed with OpenAI-compatible interface |
-| PostgreSQL | SQLite (permanent) | SQLite is fine for single-user local dev; PostgreSQL required for multi-user or production deployment |
-| CoinGecko + CCXT | Binance direct API | CCXT wraps Binance (and 99 other exchanges) — no reason to use Binance's Python SDK directly |
-## What NOT to Use
-| Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| **Zipline** | Designed for Python 3.5-3.6; community-maintained forks are fragile; slow on modern data volumes; Quantopian (its origin) is dead | vectorbt or Backtesting.py |
-| **yfinance for real-time polling** | Unofficial scraper; 429 errors are common under load; HTML changes break it without warning | Finnhub WebSocket (free, official, 60 calls/min) |
-| **Streamlit for the dashboard** | Cannot handle WebSocket push properly; poor state management for complex UIs; styling is constrained; becomes a liability once you need real charts | React + Vite + TradingView Lightweight Charts |
-| **Node.js backend** | Finance/ML ecosystem is Python-first; you'd lose access to pandas, vectorbt, pandas-ta, LangChain, scikit-learn natively | FastAPI (Python) |
-| **RabbitMQ** | More complex to deploy and operate than Redis for this scale; Redis 7 handles Celery message brokering fine at small-to-medium scale | Redis |
-| **Redux** | Overkill for dashboard state; complex boilerplate; Zustand covers the same need in 10x less code | Zustand |
-| **Chart.js or D3.js for OHLCV** | Chart.js struggles with dense candlestick data; D3 requires custom implementation; TradingView Lightweight Charts is purpose-built for this | TradingView Lightweight Charts |
-| **Free forex APIs for intraday** | No free source provides reliable sub-hourly forex data; even Alpha Vantage's free tier is severely constrained | Scope forex to daily/swing timeframes only in MVP, or defer it |
-| **Options data for MVP** | Greeks, IV surface, options chains require significant data engineering work; free sources (yfinance options) are limited and unreliable for real-time | Defer options to v2; focus MVP on stocks + crypto |
-## Sources
-- Freqtrade REST API documentation: https://www.freqtrade.io/en/stable/rest-api/
-- VectorBT documentation: https://vectorbt.dev/
-- TradingView Lightweight Charts React tutorial: https://tradingview.github.io/lightweight-charts/tutorials/react/simple
-- CoinGecko API (free tier): https://www.coingecko.com/en/api
-- CCXT documentation: https://docs.ccxt.com/
-- Alpha Vantage API: https://www.alphavantage.co/documentation/
-- FastAPI + WebSocket real-time dashboard: https://testdriven.io/blog/fastapi-postgres-websockets/
-- Celery + Redis + FastAPI production guide: https://medium.com/@dewasheesh.rana/celery-redis-fastapi-the-ultimate-2025-production-guide-broker-vs-backend-explained-5b84ef508fa7
-- TradingAgents multi-agent LLM framework: https://tradingagents-ai.github.io/
-- LangChain trading stock analysis: https://blog.quantinsti.com/langchain-trading-stock-analysis-llm-financial-python/
-- Vite vs Next.js 2026 comparison: https://designrevision.com/blog/vite-vs-nextjs
-- yfinance rate limit issues: https://medium.com/@trading.dude/why-yfinance-keeps-getting-blocked-and-what-to-use-instead-92d84bb2cc01
-- Backtrader vs NautilusTrader vs VectorBT vs Zipline: https://autotradelab.com/blog/backtrader-vs-nautilusttrader-vs-vectorbt-vs-zipline-reloaded
-- QuestDB scaling a trading bot: https://questdb.com/blog/scaling-trading-bot-with-time-series-database/
+### Backend
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Python | 3.11+ | Backend runtime |
+| FastAPI | 0.135+ | API server + WebSocket server |
+| Uvicorn | 0.44+ | ASGI server |
+| SQLAlchemy | 2.0+ | ORM (async sessions) |
+| asyncpg / aiosqlite | latest | Async DB drivers |
+| Alembic | 1.18+ | DB migrations (7 versions) |
+| APScheduler | 3.11+ | Background scheduler (NOT Celery — single-process MVP decision) |
+| pydantic-settings | 2.13+ | Type-safe config from env |
+| slowapi | 0.1.9+ | Rate limiting |
+| secure | 1.0+ | Security headers middleware |
+| PyJWT | 2.12+ | JWT tokens |
+| passlib + argon2-cffi | latest | Password hashing |
+
+### Data Layer
+| Source | Library | Schedule |
+|--------|---------|---------|
+| yfinance | yfinance 1.2+ | Every 5 min (stocks) |
+| CoinGecko | pycoingecko 3.2+ | Every 30 min (top-5 crypto) |
+| CCXT (Binance) | ccxt 4.5+ | Every 15 min (crypto OHLCV) |
+| Alpha Vantage | httpx | Every 24h (forex daily) |
+| Finnhub | websockets | WebSocket live ticks |
+
+### AI / Signal Layer
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| pandas-ta-classic | 0.4.47+ | Technical indicators (NOT pandas-ta — different package) |
+| pandas | 3.0+ | OHLCV processing |
+| vectorbt | 0.28+ | Backtesting engine |
+| LangChain + OpenAI | 0.3+ | LLM signal explanations (gpt-4o-mini, optional) |
+
+### Frontend
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | 19+ | UI framework |
+| Vite | 8+ | Build tool |
+| TypeScript | 6+ | Language |
+| Tailwind CSS | 4+ | Styling |
+| shadcn/ui | 4+ | Component library |
+| TradingView Lightweight Charts | 5.1+ | Candlestick charts |
+| TanStack Query | 5+ | Server state / data fetching |
+| Zustand | 5+ | Frontend state management |
+| Recharts | 3+ | Performance curves, win-rate graphs |
+| React Router | 7+ | SPA routing |
+| Playwright | 1.59+ | E2E tests |
+
+### Infrastructure
+| Tool | Purpose |
+|------|---------|
+| Docker Compose | TimescaleDB (PostgreSQL 16) only — backend runs locally |
+| TimescaleDB | PostgreSQL 16 extension for time-series (hypertables) |
+| SQLite + aiosqlite | Dev fallback (no Docker needed) |
 <!-- GSD:stack-end -->
+
+<!-- GSD:architecture-start source:ARCHITECTURE.md -->
+## Architecture Overview
+
+```
+Free APIs (yfinance, CoinGecko, CCXT, Finnhub, Alpha Vantage)
+    |
+    v
+APScheduler jobs (7 jobs, 5-min to 24h intervals)
+    |
+    v
+ingestion/ providers --> upsert_candles() --> market_data table (TimescaleDB hypertable)
+                                                      |
+                                                      v
+                                              analysis/ scanner.py
+                                              (every 5 min via scheduler)
+                                                      |
+                            +-----------+-------------+-------------+
+                            |           |             |             |
+                      indicators/   signals/     regime/       explainer/
+                      (pure fn)    (pure fn)    (pure fn)    (LLM, optional)
+                            |           |             |             |
+                            +-----+-----+-------------+-------------+
+                                  |
+                                  v
+                           signals table (upsert ON CONFLICT DO UPDATE)
+                                  |
+                    +-------------+-------------+
+                    |                           |
+              FastAPI REST API            WebSocket /ws/live
+              (JWT-protected)            (Finnhub live ticks)
+                    |                           |
+              React SPA                   TanStack Query cache
+              (Vite, port 5173)           (injected via useWebSocket.ts)
+```
+
+**Key design principle:** All analysis engines (`indicators.py`, `signals.py`, `backtesting/engine.py`, `paper_trading/engine.py`, `alerts/engine.py`) are pure functions — no DB, no FastAPI imports. Fully testable in isolation.
+<!-- GSD:architecture-end -->
+
+## Running the App
+
+### Prerequisites
+- Python 3.11+, uv, Node.js 20+, Docker (for TimescaleDB)
+
+### Start TimescaleDB
+```bash
+docker compose up -d
+```
+
+### Backend
+```bash
+# Install dependencies
+cd backend
+uv sync
+
+# Run migrations (first time or after schema changes)
+uv run alembic upgrade head
+
+# Start API server (port 8000)
+uv run uvicorn app.main:app --reload
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev   # http://localhost:5173 — proxies /api and /ws to localhost:8000
+```
+
+### Run Tests
+```bash
+# From repo root
+PYTHONPATH=backend uv --project backend run pytest tests/ -q
+
+# Single file
+PYTHONPATH=backend uv --project backend run pytest tests/test_indicators.py -v
+```
+
+### Hash a New Admin Password
+```bash
+PYTHONPATH=backend uv --project backend run python -c \
+  "from app.core.security import hash_password; print(hash_password('yourpassword'))"
+# Paste the output into ADMIN_PASSWORD_HASH in .env
+```
+
+## Environment Variables
+
+Copy `.env.example` to `.env` in the `backend/` directory.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DATABASE_URL` | Yes | SQLite dev.db | asyncpg or aiosqlite URL |
+| `FINNHUB_API_KEY` | Yes | — | Finnhub WebSocket live ticks |
+| `COINGECKO_API_KEY` | Yes | — | CoinGecko Demo plan key |
+| `ALPHA_VANTAGE_API_KEY` | No | "" | Forex daily data (skipped if empty) |
+| `JWT_SECRET` | Yes | dev-secret (change!) | Signs JWT access tokens |
+| `ADMIN_USERNAME` | No | admin | Single-user login username |
+| `ADMIN_PASSWORD_HASH` | Yes | — | Argon2 hash from `hash_password()` |
+| `FRONTEND_URL` | No | http://localhost:5173 | CORS allowed origin |
+| `COOKIE_SAMESITE` | No | lax | Cookie SameSite attribute |
+| `TELEGRAM_BOT_TOKEN` | No | "" | Alert notifications (disabled if empty) |
+| `TELEGRAM_CHAT_ID` | No | "" | Telegram chat target |
+| `DISCORD_WEBHOOK_URL` | No | "" | Discord alert webhook |
+| `OPENAI_API_KEY` | No | "" | LLM explanations (disabled if empty) |
+| `LLM_ENABLED` | No | false | Master switch for LLM explanations |
+
+## API Endpoints
+
+### Auth (unprotected)
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/auth/login` | Login with username+password, sets JWT httpOnly cookie |
+| POST | `/auth/logout` | Clears JWT cookie |
+| GET | `/auth/me` | Returns current user info (requires valid cookie) |
+
+### Market Data (JWT required)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/candles/{symbol}` | OHLCV candles (params: interval, limit) |
+| GET | `/api/symbols` | List of all tracked symbols |
+
+### Indicators (JWT required)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/indicators/{symbol}` | Computed IndicatorSet for a symbol |
+
+### Signals (JWT required)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/signals` | All latest signals (BUY/SELL/HOLD) |
+| GET | `/api/signals/{symbol}` | Signal for one symbol |
+
+### Backtesting (JWT required)
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/backtest` | Run vectorbt backtest for a symbol |
+| GET | `/api/backtest/runs` | List historical backtest runs |
+
+### Paper Trading (JWT required)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/paper/portfolio` | Current portfolio (cash, positions, equity) |
+| POST | `/api/paper/order` | Place a paper BUY or SELL order |
+| GET | `/api/paper/trades` | Trade history |
+| GET | `/api/paper/equity` | Equity curve (time series) |
+
+### Alerts (JWT required)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/alerts` | List all alert rules |
+| POST | `/api/alerts` | Create an alert rule |
+| DELETE | `/api/alerts/{id}` | Delete an alert rule |
+
+### Education (unprotected)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/education/lessons` | List all lessons |
+| GET | `/api/education/lessons/{id}` | Get lesson content |
+
+### WebSocket
+| Path | Description |
+|------|-------------|
+| `ws://localhost:8000/ws/live` | Live Finnhub price ticks, broadcast to all connected clients |
+
+## Database Schema
+
+7 tables across 7 Alembic migrations.
+
+| Table | Key Columns | Notes |
+|-------|-------------|-------|
+| `market_data` | symbol, market, interval, timestamp, open, high, low, close, volume | TimescaleDB hypertable; PK = (symbol, interval, timestamp); upsert DO NOTHING |
+| `signals` | symbol, interval, scanned_at, direction, confidence, regime, close, entry_price, stop_loss, target_price, rsi_14, macd_val, adx_14, atr_14, reasons, explanation, multiframe_agreement | Upsert ON CONFLICT (symbol, interval) DO UPDATE — always refreshed |
+| `backtest_runs` | id, symbol, interval, run_at, sharpe_ratio, max_drawdown, win_rate, profit_factor, total_return, total_trades, equity_curve | equity_curve is JSON array of [ts, value] pairs |
+| `paper_portfolio` | id, cash, created_at | Single row; starting cash $10,000 |
+| `paper_positions` | id, symbol, quantity, avg_entry_price, opened_at | Open positions |
+| `paper_trades` | id, symbol, side, quantity, fill_price, commission_paid, realized_pnl, created_at | Completed fills |
+| `paper_equity_snapshots` | id, timestamp, equity | Equity value at each 5-min snapshot |
+| `alert_rules` | id, symbol, threshold_type, threshold_value, enabled, created_at | threshold_type: price_spike, volume_surge, trend_reversal |
+| `users` | id, username, password_hash, created_at | Single admin user |
+
+## APScheduler Jobs
+
+7 jobs registered at startup via `ingestion/scheduler.py` lifespan hook:
+
+| Job ID | Function | Interval | Purpose |
+|--------|----------|---------|---------|
+| `stock_incremental` | `stock_incremental_job()` | Every 5 min | yfinance OHLCV for STOCK_WATCHLIST |
+| `crypto_coingecko` | `crypto_coingecko_job()` | Every 30 min | CoinGecko 4H candles for top-5 coins |
+| `crypto_ccxt` | `crypto_ccxt_job()` | Every 15 min | CCXT Binance OHLCV for CCXT_CRYPTO_SYMBOLS |
+| `analysis_scan` | `analysis_scan_job()` | Every 5 min | Rule-based signal scan across all assets |
+| `paper_equity_snapshot` | `equity_snapshot_job()` | Every 5 min | Mark paper portfolio to market |
+| `alert_check` | `alert_check_job()` | Every 5 min | Evaluate alert rules, dispatch notifications |
+| `forex_daily` | `forex_daily_job()` | Every 24h | Alpha Vantage daily FX candles |
+
+## Security
+
+- **Auth**: Single-user login via `/auth/login`. Password verified with Argon2 (`passlib`). On success, a 30-min JWT is set as an httpOnly cookie (`access_token`).
+- **JWT**: Signed with HS256 using `JWT_SECRET`. Decoded by `get_current_user` dependency injected on all protected routers.
+- **CORS**: Restricted to `FRONTEND_URL` (default `http://localhost:5173`). `allow_credentials=True` required for cookie transport.
+- **Security headers**: `secure` library adds HSTS, X-Frame-Options, X-Content-Type-Options, etc. via async middleware.
+- **Rate limiting**: `slowapi` (wraps limits-library). Configured on sensitive endpoints.
+- **Allowed methods**: GET, POST, DELETE, OPTIONS only.
 
 <!-- GSD:conventions-start source:CONVENTIONS.md -->
 ## Conventions
 
-Conventions not yet established. Will populate as patterns emerge during development.
+### Pure Function Pattern
+All analysis and simulation engines are pure functions with no I/O:
+- `compute_indicators(df, symbol, interval) -> IndicatorSet | None`
+- `score_signal(ind) -> SignalResult`
+- `detect_regime(ind, atr_sma_20) -> RegimeType`
+- `run_backtest(df, ...) -> BacktestResult`
+- `fill_order(...) -> FillResult`
+- `check_alerts(candles, rules, rsi_series) -> list[AlertTrigger]`
+
+This makes them testable with zero infrastructure — no DB, no FastAPI, no scheduler needed.
+
+### Provider ABC Pattern
+All data providers implement `OHLCVProvider` ABC from `ingestion/base_provider.py`:
+- `fetch_historical(symbol, interval, start, end) -> list[OHLCVCandle]`
+- `fetch_latest(symbol, interval) -> list[OHLCVCandle]`
+- Candles are normalized into `OHLCVCandle` dataclass (frozen, immutable)
+- The scheduler and ingestion pipeline call only the ABC — never provider-specific code
+
+### TDD RED→GREEN
+Tests were written before implementation. The test suite in `backend/tests/` covers all pure functions with property-based edge cases.
+
+### Upsert Semantics
+- `market_data` table: `ON CONFLICT DO NOTHING` — candles are immutable historical facts
+- `signals` table: `ON CONFLICT (symbol, interval) DO UPDATE` — signals are always refreshed on each scan
+
+### pandas-ta-classic Column Names
+Package is `pandas-ta-classic`, imported as `import pandas_ta_classic as ta`. Exact column names:
+- `MACD_12_26_9`, `MACDs_12_26_9`, `MACDh_12_26_9`
+- `BBU_20_2.0`, `BBL_20_2.0`, `BBP_20_2.0`
+- `ADX_14`, `ATRr_14`, `EMA_50`, `EMA_200`
+
+### Circular Import Avoidance
+`STOCK_WATCHLIST` and `CCXT_CRYPTO_SYMBOLS` live in `app/core/watchlists.py` (not in `scheduler.py`) to avoid circular imports with `scanner.py`.
+
+### run_in_threadpool
+Synchronous library calls (yfinance, some CCXT ops) that run inside async FastAPI handlers must use `starlette.concurrency.run_in_threadpool`.
+
+### MIN_CANDLES = 200
+EMA-200 requires exactly 200 candles. `compute_indicators()` returns `None` if `len(df) < 200`. The scanner silently skips those assets.
 <!-- GSD:conventions-end -->
-
-<!-- GSD:architecture-start source:ARCHITECTURE.md -->
-## Architecture
-
-Architecture not yet mapped. Follow existing patterns found in the codebase.
-<!-- GSD:architecture-end -->
 
 <!-- GSD:skills-start source:skills/ -->
 ## Project Skills
@@ -156,8 +338,6 @@ Use these entry points:
 
 Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
 <!-- GSD:workflow-end -->
-
-
 
 <!-- GSD:profile-start -->
 ## Developer Profile
