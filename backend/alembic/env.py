@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from app.core.config import settings
 from app.models.market_data import Base
 from app.models.signal import TradingSignal  # noqa: F401  — registers with Base.metadata
+from app.models.backtest import BacktestRun  # noqa: F401  — registers with Base.metadata
 
 # Alembic Config object
 alembic_config = context.config
