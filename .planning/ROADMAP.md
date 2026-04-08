@@ -64,7 +64,11 @@ Plans:
   2. Backtest results show Sharpe ratio, max drawdown, win rate, and profit factor
   3. Backtest engine enforces shift(1) signal delay — no signal at time T uses data with timestamp >= T (verifiable by audit test)
   4. Transaction costs (configurable commission and slippage) are deducted from all backtest results
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — vectorbt install, BacktestResult/BacktestRequest models, BacktestRun ORM, migration 003, engine.py (run_backtest + shift(1) bias prevention), test_backtest.py
+- [ ] 03-02-PLAN.md — POST /api/backtest route (run_in_threadpool, persistence), main.py router registration, test_backtest_api.py
 
 ### Phase 4: Paper Trading Simulator
 **Goal**: Users can trade with fake money against live market data and compare simulated results to backtest predictions
@@ -122,7 +126,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 |-------|----------------|--------|-----------|
 | 1. Data Foundation | 3/3 | Complete   | 2026-04-08 |
 | 2. Analysis Engine | 3/3 | Complete   | 2026-04-08 |
-| 3. Backtesting Engine | 0/? | Not started | - |
+| 3. Backtesting Engine | 0/2 | Not started | - |
 | 4. Paper Trading Simulator | 0/? | Not started | - |
 | 5. Dashboard | 0/? | Not started | - |
 | 6. Alerts and Education | 0/? | Not started | - |
