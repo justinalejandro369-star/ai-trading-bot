@@ -45,7 +45,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **DASH-02**: Real-time signal feed shows AI suggestions with reasoning, confidence, and entry/exit/stop-loss levels
 - [ ] **DASH-03**: Portfolio view shows current positions, P&L, allocation breakdown
 - [ ] **DASH-04**: Backtest results page with visual equity curves and performance metrics
-- [ ] **DASH-05**: Dashboard updates in real-time via WebSocket connection
+- [x] **DASH-05**: Dashboard updates in real-time via WebSocket connection
 
 ### Alerts & Notifications
 
@@ -130,7 +130,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DASH-02 | Phase 5 | Pending |
 | DASH-03 | Phase 5 | Pending |
 | DASH-04 | Phase 5 | Pending |
-| DASH-05 | Phase 5 | Pending |
+| DASH-05 | Phase 5 | Complete |
 | ALERT-01 | Phase 6 | Pending |
 | ALERT-02 | Phase 6 | Pending |
 | ALERT-03 | Phase 6 | Pending |
