@@ -41,10 +41,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Dashboard
 
-- [ ] **DASH-01**: Web dashboard displays TradingView-style candlestick charts with indicator overlays
-- [ ] **DASH-02**: Real-time signal feed shows AI suggestions with reasoning, confidence, and entry/exit/stop-loss levels
-- [ ] **DASH-03**: Portfolio view shows current positions, P&L, allocation breakdown
-- [ ] **DASH-04**: Backtest results page with visual equity curves and performance metrics
+- [x] **DASH-01**: Web dashboard displays TradingView-style candlestick charts with indicator overlays
+- [x] **DASH-02**: Real-time signal feed shows AI suggestions with reasoning, confidence, and entry/exit/stop-loss levels
+- [x] **DASH-03**: Portfolio view shows current positions, P&L, allocation breakdown
+- [x] **DASH-04**: Backtest results page with visual equity curves and performance metrics
 - [x] **DASH-05**: Dashboard updates in real-time via WebSocket connection
 
 ### Alerts & Notifications
@@ -126,10 +126,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PAPER-02 | Phase 4 | Complete |
 | PAPER-03 | Phase 4 | Complete |
 | PAPER-04 | Phase 4 | Complete |
-| DASH-01 | Phase 5 | Pending |
-| DASH-02 | Phase 5 | Pending |
-| DASH-03 | Phase 5 | Pending |
-| DASH-04 | Phase 5 | Pending |
+| DASH-01 | Phase 5 | Complete |
+| DASH-02 | Phase 5 | Complete |
+| DASH-03 | Phase 5 | Complete |
+| DASH-04 | Phase 5 | Complete |
 | DASH-05 | Phase 5 | Complete |
 | ALERT-01 | Phase 6 | Pending |
 | ALERT-02 | Phase 6 | Pending |

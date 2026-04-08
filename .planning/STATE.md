@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-dashboard/05-01-PLAN.md
-last_updated: "2026-04-08T14:23:54.357Z"
+stopped_at: Completed 05-dashboard/05-02-PLAN.md
+last_updated: "2026-04-08T14:35:27.234Z"
 last_activity: 2026-04-08
 progress:
   total_phases: 7
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 05 (dashboard) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-04-08
 
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04-paper-trading-simulator P01 | 4min | 2 tasks | 7 files |
 | Phase 04-paper-trading-simulator P02 | 8 | 2 tasks | 5 files |
 | Phase 05-dashboard P01 | 35 | 2 tasks | 14 files |
+| Phase 05-dashboard P02 | 9 | 2 tasks | 27 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,8 @@ Recent decisions affecting current work:
 - [Phase 04-paper-trading-simulator]: Batch MarketData price query via WHERE symbol IN (...) + Python-side dedup avoids N+1 DB round-trips in account summary and snapshot job
 - [Phase 05-dashboard]: rate_limit.py singleton: shared slowapi Limiter extracted to app/core/rate_limit.py to prevent double-counting when auth routes module is reloaded in tests
 - [Phase 05-dashboard]: secure.Secure.with_default_headers().set_headers_async(response) used in main.py — secure>=1.0.1 API does not expose framework.fastapi() method
+- [Phase 05-dashboard]: shadcn/ui v4 uses @base-ui/react/button — no asChild; use onClick+navigate() for link buttons
+- [Phase 05-dashboard]: checkAuth() called eagerly in main.tsx before RouterProvider render to avoid PrivateRoute loading flicker
 
 ### Pending Todos
 
@@ -108,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-08T14:23:54.355Z
-Stopped at: Completed 05-dashboard/05-01-PLAN.md
+Last session: 2026-04-08T14:35:27.231Z
+Stopped at: Completed 05-dashboard/05-02-PLAN.md
 Resume file: None
