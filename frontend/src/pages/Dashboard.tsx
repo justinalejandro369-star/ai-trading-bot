@@ -9,6 +9,7 @@ import CandlestickChart from '@/components/chart/CandlestickChart'
 import SignalFeed from '@/components/signals/SignalFeed'
 import PortfolioView from '@/components/portfolio/PortfolioView'
 import BacktestResults from '@/components/backtest/BacktestResults'
+import Education from '@/pages/Education'
 
 const WS_URL = (import.meta.env.VITE_WS_URL as string | undefined) ?? 'ws://localhost:8000'
 
@@ -73,6 +74,9 @@ export default function Dashboard() {
             <TabsTrigger value="backtest" className="data-[state=active]:bg-slate-700">
               Backtest
             </TabsTrigger>
+            <TabsTrigger value="education" className="data-[state=active]:bg-slate-700">
+              Learn
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="chart">
@@ -89,6 +93,10 @@ export default function Dashboard() {
 
           <TabsContent value="backtest">
             <BacktestResults />
+          </TabsContent>
+
+          <TabsContent value="education">
+            <Education />
           </TabsContent>
         </Tabs>
       </main>
