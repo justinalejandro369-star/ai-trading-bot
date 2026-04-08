@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-analysis-engine/02-02-PLAN.md
-last_updated: "2026-04-08T06:03:08.064Z"
+stopped_at: Completed 02-analysis-engine/02-03-PLAN.md
+last_updated: "2026-04-08T06:08:39.701Z"
 last_activity: 2026-04-08
 progress:
   total_phases: 7
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 02 (analysis-engine) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-08
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-data-foundation P02 | 10 | 2 tasks | 10 files |
 | Phase 01 P03 | 4 | 2 tasks | 10 files |
 | Phase 02-analysis-engine P02 | 2 | 2 tasks | 7 files |
+| Phase 02-analysis-engine P03 | 4 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase 02-analysis-engine]: SELL signals have stop_loss=None and target_price=None — shorting risk management deferred
 - [Phase 02-analysis-engine]: GET /api/indicators/{symbol} computes on-demand from DB candles — not pre-cached — for single-asset dashboard lookups
 - [Phase 02-analysis-engine]: Volume surge zero-guard (vol_sma_20 > 0) prevents ZeroDivisionError for CoinGecko zero-volume assets
+- [Phase 02-analysis-engine]: Watchlist constants extracted to app/core/watchlists.py to resolve circular import between scanner.py and scheduler.py
+- [Phase 02-analysis-engine]: SCAN_INTERVAL set to 1D only -- multi-timeframe deferred to Phase 7
 
 ### Pending Todos
 
@@ -96,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-08T06:03:08.062Z
-Stopped at: Completed 02-analysis-engine/02-02-PLAN.md
+Last session: 2026-04-08T06:08:39.698Z
+Stopped at: Completed 02-analysis-engine/02-03-PLAN.md
 Resume file: None

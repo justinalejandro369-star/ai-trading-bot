@@ -13,7 +13,7 @@ The system is built in strict dependency order: a robust data pipeline must exis
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Data Foundation** - Ingest and store normalized OHLCV data for stocks and crypto via free APIs (completed 2026-04-08)
-- [ ] **Phase 2: Analysis Engine** - Compute technical indicators and generate rule-based AI signals with scores
+- [x] **Phase 2: Analysis Engine** - Compute technical indicators and generate rule-based AI signals with scores (completed 2026-04-08)
 - [ ] **Phase 3: Backtesting Engine** - Validate signal quality against historical data with look-ahead bias prevention
 - [ ] **Phase 4: Paper Trading Simulator** - Simulate trading with fake money against live data with P&L tracking
 - [ ] **Phase 5: Dashboard** - Web dashboard with charts, signal feed, portfolio view, and real-time updates
@@ -53,7 +53,7 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — pandas-ta-classic install, TradingSignal model, Alembic migration 002, indicators.py (compute_indicators), test_indicators.py
 - [x] 02-02-PLAN.md — signals.py (score_signal), regime.py (detect_regime), REST endpoints (GET /api/indicators/{symbol}, GET /api/signals, GET /api/signals/top), test_signals.py, test_analysis_api.py
-- [ ] 02-03-PLAN.md — scanner.py (scan_asset, scan_all_assets, analysis_scan_job), scheduler.py 4th job registration, test_scanner.py, full suite green
+- [x] 02-03-PLAN.md — scanner.py (scan_asset, scan_all_assets, analysis_scan_job), scheduler.py 4th job registration, test_scanner.py, full suite green
 
 ### Phase 3: Backtesting Engine
 **Goal**: Users can test signal strategies against historical data and receive trustworthy performance metrics that are free of look-ahead bias
@@ -121,7 +121,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Data Foundation | 3/3 | Complete   | 2026-04-08 |
-| 2. Analysis Engine | 2/3 | In Progress|  |
+| 2. Analysis Engine | 3/3 | Complete   | 2026-04-08 |
 | 3. Backtesting Engine | 0/? | Not started | - |
 | 4. Paper Trading Simulator | 0/? | Not started | - |
 | 5. Dashboard | 0/? | Not started | - |
