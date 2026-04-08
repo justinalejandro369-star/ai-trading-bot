@@ -19,18 +19,18 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Analysis Engine
 
 - [ ] **ANLYS-01**: System computes technical indicators (RSI, MACD, Bollinger Bands, moving averages, ADX, volume)
-- [ ] **ANLYS-02**: AI detects entry/exit signals with confidence scores based on indicator convergence
+- [x] **ANLYS-02**: AI detects entry/exit signals with confidence scores based on indicator convergence
 - [ ] **ANLYS-03**: Each signal includes plain-language explanation of WHY it was generated (LLM-powered)
-- [ ] **ANLYS-04**: System scans across stocks + crypto simultaneously, ranking opportunities by score
+- [x] **ANLYS-04**: System scans across stocks + crypto simultaneously, ranking opportunities by score
 - [ ] **ANLYS-05**: Multi-timeframe correlation — signals show agreement across 1H, 4H, and daily charts
-- [ ] **ANLYS-06**: Market regime detection labels current conditions (trending/ranging/volatile) per asset
+- [x] **ANLYS-06**: Market regime detection labels current conditions (trending/ranging/volatile) per asset
 
 ### Backtesting
 
-- [x] **BKTS-01**: User can backtest strategies against historical data using vectorbt
-- [x] **BKTS-02**: Backtesting engine enforces look-ahead bias prevention by design
-- [x] **BKTS-03**: Backtest results show performance metrics: Sharpe ratio, max drawdown, win rate, profit factor
-- [x] **BKTS-04**: Backtest models transaction costs (slippage + commissions) for realistic results
+- [ ] **BKTS-01**: User can backtest strategies against historical data using vectorbt
+- [ ] **BKTS-02**: Backtesting engine enforces look-ahead bias prevention by design
+- [ ] **BKTS-03**: Backtest results show performance metrics: Sharpe ratio, max drawdown, win rate, profit factor
+- [ ] **BKTS-04**: Backtest models transaction costs (slippage + commissions) for realistic results
 
 ### Paper Trading
 
@@ -113,15 +113,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-05 | Phase 1 | Complete |
 | DATA-06 | Phase 7 | Pending |
 | ANLYS-01 | Phase 2 | Pending |
-| ANLYS-02 | Phase 2 | Pending |
+| ANLYS-02 | Phase 2 | Complete |
 | ANLYS-03 | Phase 7 | Pending |
-| ANLYS-04 | Phase 2 | Pending |
+| ANLYS-04 | Phase 2 | Complete |
 | ANLYS-05 | Phase 7 | Pending |
-| ANLYS-06 | Phase 2 | Pending |
-| BKTS-01 | Phase 3 | Complete |
-| BKTS-02 | Phase 3 | Complete |
-| BKTS-03 | Phase 3 | Complete |
-| BKTS-04 | Phase 3 | Complete |
+| ANLYS-06 | Phase 2 | Complete |
+| BKTS-01 | Phase 3 | Pending |
+| BKTS-02 | Phase 3 | Pending |
+| BKTS-03 | Phase 3 | Pending |
+| BKTS-04 | Phase 3 | Pending |
 | PAPER-01 | Phase 4 | Pending |
 | PAPER-02 | Phase 4 | Pending |
 | PAPER-03 | Phase 4 | Pending |

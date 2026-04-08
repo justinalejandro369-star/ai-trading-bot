@@ -27,7 +27,7 @@ from app.analysis.indicators import MIN_CANDLES, IndicatorSet, compute_indicator
 from app.analysis.regime import detect_regime
 from app.analysis.signals import score_signal
 from app.core.database import async_session_factory
-from app.ingestion.scheduler import CCXT_CRYPTO_SYMBOLS, STOCK_WATCHLIST
+from app.core.watchlists import CCXT_CRYPTO_SYMBOLS, STOCK_WATCHLIST
 from app.models.signal import TradingSignal
 
 __all__ = ["SCAN_INTERVAL", "scan_asset", "scan_all_assets", "analysis_scan_job"]
