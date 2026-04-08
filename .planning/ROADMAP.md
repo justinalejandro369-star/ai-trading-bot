@@ -79,7 +79,11 @@ Plans:
   2. Order fills simulate slippage against real-time market prices (not perfect-fill execution)
   3. User can view a running P&L equity curve showing account value over time
   4. User can see a side-by-side comparison of paper trading results vs. backtest predictions for the same strategy
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — PaperAccount/PaperPosition/EquitySnapshot ORM models, Alembic migration 004, fill_order() + compute_equity() pure engine, Pydantic request models, TDD unit tests (RED→GREEN)
+- [ ] 04-02-PLAN.md — Five REST endpoints (/accounts, /accounts/{id}, /accounts/{id}/orders, /accounts/{id}/equity, /accounts/{id}/compare), equity_snapshot_job (APScheduler, max_instances=1), scheduler.py 5th job, main.py router wiring, integration tests GREEN
 
 ### Phase 5: Dashboard
 **Goal**: Users can view all system outputs — charts, signals, portfolio, and analytics — through a responsive web interface with real-time updates
@@ -127,7 +131,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 1. Data Foundation | 3/3 | Complete   | 2026-04-08 |
 | 2. Analysis Engine | 3/3 | Complete   | 2026-04-08 |
 | 3. Backtesting Engine | 0/2 | Not started | - |
-| 4. Paper Trading Simulator | 0/? | Not started | - |
+| 4. Paper Trading Simulator | 0/2 | Not started | - |
 | 5. Dashboard | 0/? | Not started | - |
 | 6. Alerts and Education | 0/? | Not started | - |
 | 7. LLM Explanations and Market Expansion | 0/? | Not started | - |
