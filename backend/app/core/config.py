@@ -30,8 +30,10 @@ class Settings(BaseSettings):
     telegram_chat_id: str = Field("", alias="TELEGRAM_CHAT_ID")
     discord_webhook_url: str = Field("", alias="DISCORD_WEBHOOK_URL")
 
-    # LLM settings (Phase 7) — disabled by default; set OPENAI_API_KEY to enable
-    openai_api_key: str = Field("", alias="OPENAI_API_KEY")
+    # LLM settings — disabled by default; set OPENROUTER_API_KEY to enable
+    # OpenRouter provides free model access (meta-llama, deepseek, qwen)
+    openrouter_api_key: str = Field("", alias="OPENROUTER_API_KEY")
+    openrouter_model: str = Field("meta-llama/llama-4-scout:free", alias="OPENROUTER_MODEL")
     llm_enabled: bool = Field(False, alias="LLM_ENABLED")
 
 

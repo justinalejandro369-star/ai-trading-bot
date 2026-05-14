@@ -25,9 +25,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.analysis.explainer import generate_explanation
 from app.analysis.indicators import MIN_CANDLES, IndicatorSet, compute_indicators
+from app.analysis.llm_advisor import get_llm_advisory
 from app.analysis.multiframe import compute_multiframe_agreement
 from app.analysis.regime import detect_regime
-from app.analysis.signals import score_signal
+from app.analysis.signals import apply_llm_advisory, score_signal
 from app.core.database import async_session_factory
 from app.core.watchlists import CCXT_CRYPTO_SYMBOLS, STOCK_WATCHLIST
 from app.models.signal import TradingSignal
@@ -101,7 +102,17 @@ async def scan_asset(
     regime = detect_regime(ind, atr_sma_20=atr_sma_20)
     signal = score_signal(ind)
 
-    # Phase 7: generate LLM explanation (gracefully disabled if llm_enabled=False)
+    # LLM advisory: ask LLM to review indicators and suggest confidence adjustment
+    advisory = await get_llm_advisory(
+        ind=ind,
+        regime=regime,
+        direction=signal.direction,
+        confidence=signal.confidence,
+    )
+    # Apply LLM adjustment to confidence (clamped, may change direction)
+    signal = apply_llm_advisory(signal, advisory)
+
+    # Generate LLM explanation (gracefully disabled if llm_enabled=False)
     explanation = await generate_explanation(
         symbol=symbol,
         direction=signal.direction,
@@ -122,12 +133,14 @@ async def scan_asset(
                 (symbol, interval, scanned_at, direction, confidence, regime,
                  close, entry_price, stop_loss, target_price,
                  rsi_14, macd_val, adx_14, atr_14, reasons,
-                 explanation, multiframe_agreement)
+                 explanation, multiframe_agreement,
+                 llm_adjustment, llm_reasoning, llm_patterns)
             VALUES
                 (:symbol, :interval, :scanned_at, :direction, :confidence, :regime,
                  :close, :entry_price, :stop_loss, :target_price,
                  :rsi_14, :macd_val, :adx_14, :atr_14, :reasons,
-                 :explanation, :multiframe_agreement)
+                 :explanation, :multiframe_agreement,
+                 :llm_adjustment, :llm_reasoning, :llm_patterns)
             ON CONFLICT (symbol, interval) DO UPDATE SET
                 scanned_at            = excluded.scanned_at,
                 direction             = excluded.direction,
@@ -143,7 +156,10 @@ async def scan_asset(
                 atr_14                = excluded.atr_14,
                 reasons               = excluded.reasons,
                 explanation           = excluded.explanation,
-                multiframe_agreement  = excluded.multiframe_agreement
+                multiframe_agreement  = excluded.multiframe_agreement,
+                llm_adjustment        = excluded.llm_adjustment,
+                llm_reasoning         = excluded.llm_reasoning,
+                llm_patterns          = excluded.llm_patterns
         """),
         {
             "symbol": symbol,
@@ -163,6 +179,9 @@ async def scan_asset(
             "reasons": json.dumps(signal.reasons),
             "explanation": explanation,
             "multiframe_agreement": json.dumps(multiframe),
+            "llm_adjustment": signal.llm_adjustment,
+            "llm_reasoning": signal.llm_reasoning,
+            "llm_patterns": json.dumps(signal.llm_patterns),
         },
     )
     await session.commit()
@@ -194,6 +213,9 @@ async def scan_asset(
         reasons=json.dumps(signal.reasons),
         explanation=explanation,
         multiframe_agreement=json.dumps(multiframe),
+        llm_adjustment=signal.llm_adjustment,
+        llm_reasoning=signal.llm_reasoning,
+        llm_patterns=json.dumps(signal.llm_patterns),
     )
 
 

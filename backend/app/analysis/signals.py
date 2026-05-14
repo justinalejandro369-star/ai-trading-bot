@@ -30,6 +30,10 @@ class SignalResult:
     stop_loss: float | None     # None for SELL and HOLD
     target_price: float | None  # None for SELL and HOLD
     reasons: list[str] = field(default_factory=list)
+    # LLM advisory fields — populated when LLM is enabled
+    llm_adjustment: int = 0              # -15 to +15 confidence adjustment
+    llm_reasoning: str = ""              # LLM's 1-2 sentence explanation
+    llm_patterns: list[str] = field(default_factory=list)  # Detected patterns
 
 
 THRESHOLD = 55  # Minimum score for a directional signal
@@ -128,3 +132,42 @@ def score_signal(ind: IndicatorSet) -> SignalResult:
             target_price=None,
             reasons=reasons,
         )
+
+
+def apply_llm_advisory(signal: SignalResult, advisory) -> SignalResult:
+    """
+    Apply LLM advisory adjustment to a signal's confidence score.
+
+    The adjustment is added to confidence, clamped to [0, 100].
+    If the adjusted confidence crosses the THRESHOLD boundary, the direction
+    may change (e.g., BUY with confidence dropping below 55 becomes HOLD).
+
+    Args:
+        signal: Original SignalResult from score_signal().
+        advisory: LLMAdvisory dataclass with adjustment, reasoning, patterns.
+
+    Returns:
+        New SignalResult with adjusted confidence and LLM fields populated.
+    """
+    if advisory.adjustment == 0 and not advisory.reasoning:
+        # No advisory — return signal as-is with empty LLM fields
+        return signal
+
+    adjusted_confidence = max(0, min(100, signal.confidence + advisory.adjustment))
+
+    # Re-check direction threshold — if confidence drops below THRESHOLD, switch to HOLD
+    direction = signal.direction
+    if direction in ("BUY", "SELL") and adjusted_confidence < THRESHOLD:
+        direction = "HOLD"
+
+    return SignalResult(
+        direction=direction,
+        confidence=adjusted_confidence,
+        entry_price=signal.entry_price,
+        stop_loss=signal.stop_loss if direction == "BUY" else None,
+        target_price=signal.target_price if direction == "BUY" else None,
+        reasons=signal.reasons,
+        llm_adjustment=advisory.adjustment,
+        llm_reasoning=advisory.reasoning,
+        llm_patterns=advisory.patterns_detected,
+    )

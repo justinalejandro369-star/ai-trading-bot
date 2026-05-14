@@ -1,10 +1,10 @@
 """
 Tests for the LLM signal explainer (app.analysis.explainer).
 
-All tests mock LangChain/OpenAI — no real API calls are made.
+All tests mock LangChain/OpenRouter — no real API calls are made.
 Tests verify:
   1. Graceful disable when llm_enabled=False
-  2. Graceful disable when openai_api_key=""
+  2. Graceful disable when openrouter_api_key=""
   3. Prompt template renders correct verified indicator values
   4. Returns "" on LangChain error (no exception propagation)
 """
@@ -59,7 +59,7 @@ async def test_generate_explanation_disabled_llm_enabled_false():
     ind = _make_indicator_set()
     mock_settings = MagicMock()
     mock_settings.llm_enabled = False
-    mock_settings.openai_api_key = "sk-fake-key"
+    mock_settings.openrouter_api_key = "sk-or-fake-key"
 
     with patch("app.analysis.explainer.settings", mock_settings):
         result = await generate_explanation("AAPL", "BUY", 75, ind, ["RSI oversold (32.5)"])
@@ -69,11 +69,11 @@ async def test_generate_explanation_disabled_llm_enabled_false():
 
 @pytest.mark.asyncio
 async def test_generate_explanation_disabled_no_api_key():
-    """Returns empty string when openai_api_key="" — no LangChain calls."""
+    """Returns empty string when openrouter_api_key="" — no LangChain calls."""
     ind = _make_indicator_set()
     mock_settings = MagicMock()
     mock_settings.llm_enabled = True
-    mock_settings.openai_api_key = ""
+    mock_settings.openrouter_api_key = ""
 
     with patch("app.analysis.explainer.settings", mock_settings):
         result = await generate_explanation("AAPL", "BUY", 75, ind, [])
@@ -87,7 +87,9 @@ async def test_generate_explanation_calls_langchain_when_enabled():
     ind = _make_indicator_set()
     mock_settings = MagicMock()
     mock_settings.llm_enabled = True
-    mock_settings.openai_api_key = "sk-fake-key"
+    mock_settings.openrouter_api_key = "sk-or-fake-key"
+    mock_settings.openrouter_model = "meta-llama/llama-4-scout:free"
+    mock_settings.frontend_url = "http://localhost:5173"
 
     fake_response = MagicMock()
     fake_response.content = "RSI at 32.5 signals oversold conditions. MACD above signal line confirms bullish momentum. ATR-based volatility at 1.7% of price."
@@ -131,7 +133,9 @@ async def test_generate_explanation_returns_empty_on_langchain_error():
     ind = _make_indicator_set()
     mock_settings = MagicMock()
     mock_settings.llm_enabled = True
-    mock_settings.openai_api_key = "sk-fake-key"
+    mock_settings.openrouter_api_key = "sk-or-fake-key"
+    mock_settings.openrouter_model = "meta-llama/llama-4-scout:free"
+    mock_settings.frontend_url = "http://localhost:5173"
 
     mock_chain = MagicMock()
     mock_chain.ainvoke = AsyncMock(side_effect=RuntimeError("API connection failed"))
@@ -201,3 +205,10 @@ def test_build_prompt_values_none_indicators():
     assert values["rsi_14"] == "N/A"
     assert values["macd_status"] == "N/A"
     assert values["rsi_note"] == ""
+
+
+def test_build_prompt_values_knowledge_context():
+    """Template includes knowledge context when provided."""
+    ind = _make_indicator_set()
+    values = _build_prompt_values("AAPL", "BUY", 75, ind, [], knowledge_context="RSI below 30 indicates oversold.")
+    assert values["knowledge_context"] == "RSI below 30 indicates oversold."

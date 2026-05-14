@@ -1,5 +1,5 @@
-import { apiPost } from '@/api/client'
-import type { BacktestResult } from '@/types'
+import { apiGet, apiPost } from '@/api/client'
+import type { BacktestResult, BacktestRunSummary, BacktestRunDetail } from '@/types'
 
 export async function runBacktest(params: {
   symbol: string
@@ -15,4 +15,13 @@ export async function runBacktest(params: {
     commission: params.commission,
     slippage: params.slippage_pct,
   })
+}
+
+export async function getBacktestRuns(symbol?: string): Promise<BacktestRunSummary[]> {
+  const path = symbol ? `/api/backtest/runs?symbol=${encodeURIComponent(symbol)}` : '/api/backtest/runs'
+  return apiGet<BacktestRunSummary[]>(path)
+}
+
+export async function getBacktestRun(id: number): Promise<BacktestRunDetail> {
+  return apiGet<BacktestRunDetail>(`/api/backtest/runs/${id}`)
 }

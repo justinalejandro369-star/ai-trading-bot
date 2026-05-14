@@ -43,7 +43,7 @@ export default function Education() {
 
   if (loading) {
     return (
-      <div data-testid="education-loading" className="p-6 text-slate-400">
+      <div data-testid="education-loading" className="p-6 text-[var(--kt-on-surface-variant)]">
         Loading concepts...
       </div>
     )
@@ -51,7 +51,7 @@ export default function Education() {
 
   if (error) {
     return (
-      <div data-testid="education-error" className="p-6 text-red-400">
+      <div data-testid="education-error" className="p-6 text-[var(--kt-tertiary-container)]">
         Failed to load: {error}
       </div>
     )
@@ -69,11 +69,11 @@ export default function Education() {
     <div data-testid="education-page" className="flex h-full gap-6">
       {/* Sidebar */}
       <aside className="w-64 shrink-0">
-        <h2 className="text-lg font-bold text-slate-100 mb-4">Trading Glossary</h2>
+        <h2 className="text-lg font-bold text-[var(--kt-on-surface)] mb-4">Trading Glossary</h2>
         {Object.entries(grouped).map(([cat, items]) =>
           items.length === 0 ? null : (
             <div key={cat} className="mb-4">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+              <p className="label-terminal text-[var(--kt-primary-container)] mb-2">
                 {CATEGORY_LABELS[cat]}
               </p>
               {items.map((concept) => (
@@ -83,8 +83,8 @@ export default function Education() {
                   onClick={() => setSelected(concept.slug)}
                   className={`w-full text-left px-3 py-2 rounded text-sm mb-1 transition-colors ${
                     selected === concept.slug
-                      ? 'bg-blue-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-700'
+                      ? 'bg-[var(--kt-surface-container-highest)] text-[var(--kt-on-surface)] border-l-2 border-[var(--kt-primary-container)]'
+                      : 'text-[var(--kt-on-surface-variant)] hover:bg-[var(--kt-surface-container-high)]'
                   }`}
                 >
                   {concept.name}
@@ -100,30 +100,30 @@ export default function Education() {
         {active ? (
           <div data-testid={`concept-detail-${active.slug}`} className="space-y-6">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-blue-400 bg-blue-900/30 px-2 py-1 rounded">
+              <span className="label-terminal text-[var(--kt-primary-container)] bg-[var(--kt-primary-container)]/10 px-2 py-1 rounded">
                 {CATEGORY_LABELS[active.category] ?? active.category}
               </span>
-              <h1 className="text-2xl font-bold text-slate-100 mt-2">{active.name}</h1>
-              <p className="text-slate-400 mt-1">{active.short}</p>
+              <h1 className="text-2xl font-bold text-[var(--kt-on-surface)] mt-2">{active.name}</h1>
+              <p className="text-[var(--kt-on-surface-variant)] mt-1">{active.short}</p>
             </div>
 
             <section>
-              <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <h3 className="label-terminal text-[var(--kt-on-surface-variant)] mb-2">
                 What it is
               </h3>
-              <p className="text-slate-300 leading-relaxed">{active.explanation}</p>
+              <p className="text-[var(--kt-on-surface-variant)] leading-relaxed">{active.explanation}</p>
             </section>
 
             {Object.keys(active.thresholds).length > 0 && (
               <section>
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <h3 className="label-terminal text-[var(--kt-on-surface-variant)] mb-2">
                   Key Levels
                 </h3>
                 <div className="flex flex-wrap gap-3">
                   {Object.entries(active.thresholds).map(([k, v]) => (
-                    <div key={k} className="bg-slate-700 rounded px-3 py-2 text-sm">
-                      <span className="text-slate-400 capitalize">{k.replace(/_/g, ' ')}: </span>
-                      <span className="text-slate-100 font-semibold">{v}</span>
+                    <div key={k} className="bg-[var(--kt-surface-container-high)] rounded px-3 py-2 text-sm">
+                      <span className="text-[var(--kt-on-surface-variant)] capitalize">{k.replace(/_/g, ' ')}: </span>
+                      <span className="text-[var(--kt-on-surface)] font-semibold font-mono">{v}</span>
                     </div>
                   ))}
                 </div>
@@ -131,16 +131,16 @@ export default function Education() {
             )}
 
             <section>
-              <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <h3 className="label-terminal text-[var(--kt-on-surface-variant)] mb-2">
                 How this bot uses it
               </h3>
-              <p className="text-slate-300 leading-relaxed bg-slate-800 rounded p-4 border-l-2 border-blue-500">
+              <p className="text-[var(--kt-on-surface)] leading-relaxed bg-[var(--kt-surface-container-low)] rounded p-4 border-l-2 border-[var(--kt-primary-container)]">
                 {active.how_we_use_it}
               </p>
             </section>
           </div>
         ) : (
-          <p className="text-slate-500">Select a concept from the left.</p>
+          <p className="text-[var(--kt-on-surface-variant)]">Select a concept from the left.</p>
         )}
       </main>
     </div>

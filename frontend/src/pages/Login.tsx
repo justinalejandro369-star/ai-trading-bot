@@ -44,18 +44,18 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
-      <Card className="w-full max-w-md bg-slate-800 border-slate-700">
+    <div className="min-h-screen bg-[#111417] flex items-center justify-center px-4">
+      <Card className="w-full max-w-md bg-[var(--kt-surface-container-low)] border-none">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl text-slate-100">Trading Bot</CardTitle>
-          <p className="text-slate-400 text-sm mt-1">
+          <CardTitle className="text-2xl text-[var(--kt-on-surface)]">Kinetic Terminal</CardTitle>
+          <p className="text-[var(--kt-on-surface-variant)] text-sm mt-1">
             Sign in to your account
           </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-slate-300">
+              <Label htmlFor="username" className="text-[var(--kt-on-surface)]">
                 Username
               </Label>
               <Input
@@ -65,11 +65,11 @@ export default function Login() {
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="admin"
                 required
-                className="bg-slate-700 border-slate-600 text-slate-100 placeholder-slate-500"
+                className="bg-[var(--kt-surface-container-lowest)] border-[rgba(66,70,84,0.15)] text-[var(--kt-on-surface)] placeholder-[var(--kt-on-surface-variant)]"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">
+              <Label htmlFor="password" className="text-[var(--kt-on-surface)]">
                 Password
               </Label>
               <Input
@@ -79,19 +79,19 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="bg-slate-700 border-slate-600 text-slate-100 placeholder-slate-500"
+                className="bg-[var(--kt-surface-container-lowest)] border-[rgba(66,70,84,0.15)] text-[var(--kt-on-surface)] placeholder-[var(--kt-on-surface-variant)]"
               />
             </div>
 
             {error && (
-              <div className="bg-red-900/50 border border-red-700 text-red-300 text-sm rounded-md px-4 py-3">
+              <div className="bg-[var(--kt-tertiary-container)]/20 text-[var(--kt-tertiary)] text-sm rounded-md px-4 py-3">
                 {error}
               </div>
             )}
 
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-gradient-to-r from-[var(--kt-primary-container)] to-[var(--kt-secondary-container)] text-white hover:opacity-90"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Signing in...' : 'Sign in'}

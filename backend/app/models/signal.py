@@ -43,8 +43,12 @@ class TradingSignal(Base):
     adx_14                = Column(Float,                 nullable=True)
     atr_14                = Column(Float,                 nullable=True)
     reasons               = Column(String(500),            nullable=True)    # JSON list serialized as string
-    explanation           = Column(Text,                  nullable=True, default="")   # LLM explanation (Phase 7)
-    multiframe_agreement  = Column(Text,                  nullable=True, default="{}")  # JSON dict (Phase 7)
+    explanation           = Column(Text,                  nullable=True, default="")   # LLM explanation
+    multiframe_agreement  = Column(Text,                  nullable=True, default="{}")  # JSON dict
+    # LLM advisory fields — populated when LLM-enhanced signal scoring is enabled
+    llm_adjustment        = Column(Integer,               nullable=True, default=0)     # -15 to +15
+    llm_reasoning         = Column(Text,                  nullable=True, default="")    # LLM reasoning
+    llm_patterns          = Column(Text,                  nullable=True, default="[]")  # JSON list of patterns
 
     def reasons_list(self) -> list[str]:
         """Deserialize reasons JSON string to list."""
@@ -63,3 +67,12 @@ class TradingSignal(Base):
             return json.loads(self.multiframe_agreement)
         except (json.JSONDecodeError, TypeError):
             return {"agreement": False}
+
+    def llm_patterns_list(self) -> list[str]:
+        """Deserialize llm_patterns JSON string to list."""
+        if self.llm_patterns is None:
+            return []
+        try:
+            return json.loads(self.llm_patterns)
+        except (json.JSONDecodeError, TypeError):
+            return []

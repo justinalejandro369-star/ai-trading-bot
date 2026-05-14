@@ -17,6 +17,11 @@ const SIGNALS_MOCK = [
     reasons: ['RSI bullish'],
     interval: '1D',
     scanned_at: '2026-04-08T12:00:00',
+    explanation: '',
+    multiframe_agreement: { agreement: false },
+    llm_adjustment: 0,
+    llm_reasoning: '',
+    llm_patterns: [],
   },
 ]
 
@@ -102,9 +107,63 @@ export async function mockBackend(page: Page): Promise<void> {
     }),
   )
 
-  // Backtest
-  await page.route('**/api/backtest', (route) =>
-    route.fulfill({ status: 200, json: BACKTEST_MOCK }),
+  // Backtest — run
+  await page.route('**/api/backtest', (route) => {
+    // Only match exact POST /api/backtest, not /api/backtest/runs*
+    if (route.request().url().includes('/api/backtest/runs')) return route.fallback()
+    return route.fulfill({ status: 200, json: BACKTEST_MOCK })
+  })
+
+  // Backtest — list runs (Performance Audit)
+  await page.route('**/api/backtest/runs', (route) =>
+    route.fulfill({
+      status: 200,
+      json: [
+        {
+          id: 1,
+          symbol: 'AAPL',
+          interval: '1D',
+          run_at: '2026-04-08T12:00:00',
+          sharpe_ratio: 1.2,
+          max_drawdown: 0.08,
+          win_rate: 0.62,
+          profit_factor: 1.8,
+          total_return: 0.15,
+          total_trades: 5,
+          commission: 0.001,
+          slippage: 0.001,
+          init_cash: 10000,
+        },
+      ],
+    }),
+  )
+
+  // Backtest — single run detail (Performance Audit)
+  await page.route('**/api/backtest/runs/*', (route) =>
+    route.fulfill({
+      status: 200,
+      json: {
+        id: 1,
+        symbol: 'AAPL',
+        interval: '1D',
+        run_at: '2026-04-08T12:00:00',
+        sharpe_ratio: 1.2,
+        max_drawdown: 0.08,
+        win_rate: 0.62,
+        profit_factor: 1.8,
+        total_return: 0.15,
+        total_trades: 5,
+        commission: 0.001,
+        slippage: 0.001,
+        init_cash: 10000,
+        equity_curve: [['2026-04-08T00:00:00', 10500]],
+      },
+    }),
+  )
+
+  // Chat
+  await page.route('**/api/chat/message', (route) =>
+    route.fulfill({ status: 200, json: { reply: 'Mock chat response.' } }),
   )
 
   // Logout

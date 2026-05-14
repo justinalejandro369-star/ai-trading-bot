@@ -143,3 +143,76 @@ async def run_backtest_endpoint(
     )
 
     return result.to_dict()
+
+
+@router.get("/runs")
+async def list_backtest_runs(
+    symbol: str | None = None,
+    session: AsyncSession = Depends(get_session),  # type: ignore[assignment]
+) -> list[dict]:
+    """
+    List historical backtest runs (without the full equity_curve, which is too large).
+
+    Optionally filter by symbol. Results ordered by run_at descending.
+    """
+    query = select(BacktestRun).order_by(BacktestRun.run_at.desc())
+    if symbol:
+        query = query.where(BacktestRun.symbol == symbol.upper())
+
+    result = await session.execute(query)
+    rows = result.scalars().all()
+
+    return [
+        {
+            "id": r.id,
+            "symbol": r.symbol,
+            "interval": r.interval,
+            "run_at": r.run_at.isoformat() if r.run_at else None,
+            "sharpe_ratio": r.sharpe_ratio,
+            "max_drawdown": r.max_drawdown,
+            "win_rate": r.win_rate,
+            "profit_factor": r.profit_factor,
+            "total_return": r.total_return,
+            "total_trades": r.total_trades,
+            "commission": r.commission,
+            "slippage": r.slippage,
+            "init_cash": r.init_cash,
+        }
+        for r in rows
+    ]
+
+
+@router.get("/runs/{run_id}")
+async def get_backtest_run(
+    run_id: int,
+    session: AsyncSession = Depends(get_session),  # type: ignore[assignment]
+) -> dict:
+    """
+    Get a single backtest run including its full equity_curve.
+
+    Raises 404 if the run_id does not exist.
+    """
+    result = await session.execute(
+        select(BacktestRun).where(BacktestRun.id == run_id)
+    )
+    run = result.scalar_one_or_none()
+
+    if run is None:
+        raise HTTPException(status_code=404, detail=f"Backtest run {run_id} not found")
+
+    return {
+        "id": run.id,
+        "symbol": run.symbol,
+        "interval": run.interval,
+        "run_at": run.run_at.isoformat() if run.run_at else None,
+        "sharpe_ratio": run.sharpe_ratio,
+        "max_drawdown": run.max_drawdown,
+        "win_rate": run.win_rate,
+        "profit_factor": run.profit_factor,
+        "total_return": run.total_return,
+        "total_trades": run.total_trades,
+        "commission": run.commission,
+        "slippage": run.slippage,
+        "init_cash": run.init_cash,
+        "equity_curve": run.equity_curve_data(),
+    }

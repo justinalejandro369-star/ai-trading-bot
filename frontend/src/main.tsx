@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import './index.css'
 import { router } from './router/index'
 import { useAuthStore } from './store/auth'
+// Theme store is imported for its side-effect: it reads localStorage and applies
+// the .dark class to <html> before React renders, preventing a flash of wrong theme.
+import './store/theme'
 
 const queryClient = new QueryClient({
   defaultOptions: {

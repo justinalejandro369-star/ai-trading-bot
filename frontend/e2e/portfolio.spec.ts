@@ -5,14 +5,8 @@ test.describe('Portfolio View', () => {
   test.beforeEach(async ({ page }) => {
     await mockBackend(page)
     await page.goto('/dashboard')
-    await page.getByRole('tab', { name: /portfolio/i }).click()
-  })
-
-  test('portfolio tab content area is visible without crash', async ({
-    page,
-  }) => {
-    const activePanel = page.locator('[data-slot="tabs-content"]').last()
-    await expect(activePanel).toBeVisible()
+    // Navigate to Portfolio via sidebar
+    await page.getByTestId('sidebar-nav').getByText('Portfolio').click()
   })
 
   test('portfolio view component renders when implemented', async ({ page }) => {
@@ -65,7 +59,7 @@ test.describe('Portfolio View', () => {
     }
   })
 
-  test('no JavaScript errors on portfolio tab', async ({ page }) => {
+  test('no JavaScript errors on portfolio section', async ({ page }) => {
     const errors: string[] = []
     page.on('console', (msg) => {
       if (msg.type() === 'error') errors.push(msg.text())

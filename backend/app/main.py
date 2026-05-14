@@ -23,8 +23,11 @@ from slowapi.errors import RateLimitExceeded
 
 from app.api.routes.alerts import router as alerts_router
 from app.api.routes.auth import router as auth_router
+from app.api.routes.chat import router as chat_router
 from app.api.routes.backtest import router as backtest_router
+from app.api.routes.chart_analysis import router as chart_analysis_router
 from app.api.routes.education import router as education_router
+from app.api.routes.indicator_series import router as indicator_series_router
 from app.api.routes.indicators import router as indicators_router
 from app.api.routes.market_data import router as market_data_router
 from app.api.routes.paper_trading import router as paper_trading_router
@@ -97,4 +100,7 @@ app.include_router(signals_router, prefix="/api", dependencies=_auth_dep)
 app.include_router(backtest_router, prefix="/api", dependencies=_auth_dep)
 app.include_router(paper_trading_router, prefix="/api", dependencies=_auth_dep)
 app.include_router(alerts_router, prefix="/api", dependencies=_auth_dep)
+app.include_router(indicator_series_router, prefix="/api", dependencies=_auth_dep)
+app.include_router(chart_analysis_router, prefix="/api", dependencies=_auth_dep)
+app.include_router(chat_router, prefix="/api", dependencies=_auth_dep)
 app.include_router(education_router, prefix="/api")

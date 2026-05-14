@@ -5,8 +5,8 @@ Generates plain-language explanations for trading signals, grounding each
 explanation in actual IndicatorSet values — no hallucinated numbers.
 
 Design:
-  - Gracefully disabled when llm_enabled=False or openai_api_key="" (no key)
-  - Uses LangChain PromptTemplate + ChatOpenAI (gpt-4o-mini)
+  - Gracefully disabled when llm_enabled=False or openrouter_api_key="" (no key)
+  - Uses LangChain PromptTemplate + ChatOpenAI pointed at OpenRouter
   - Explanation is cached on the signal row — no duplicate LLM calls per signal
   - try/except guard prevents LangChain import errors when disabled
 
@@ -37,6 +37,8 @@ Verified data:
 - Confidence score: {confidence}/100
 - Signal reasons: {reasons}
 
+{knowledge_context}
+
 Write a plain-language explanation citing the specific numbers above. Be direct and informative. No disclaimers."""
 
 
@@ -46,6 +48,7 @@ def _build_prompt_values(
     confidence: int,
     ind: IndicatorSet,
     reasons: list[str],
+    knowledge_context: str = "",
 ) -> dict:
     """Build template substitution dict from verified indicator values."""
     rsi_14 = f"{ind.rsi_14:.1f}" if ind.rsi_14 is not None else "N/A"
@@ -88,6 +91,7 @@ def _build_prompt_values(
         "adx_14": adx_14,
         "ema_note": ema_note,
         "reasons": "; ".join(reasons) if reasons else "none",
+        "knowledge_context": knowledge_context,
     }
 
 
@@ -106,7 +110,7 @@ async def generate_explanation(
 
     Gracefully disabled when:
       - settings.llm_enabled is False
-      - settings.openai_api_key is empty string
+      - settings.openrouter_api_key is empty string
 
     In either disabled case, returns "" immediately with no LangChain import error.
 
@@ -121,7 +125,7 @@ async def generate_explanation(
         Plain-language explanation string, or "" if LLM disabled or error.
     """
     try:
-        if not settings.llm_enabled or not settings.openai_api_key:
+        if not settings.llm_enabled or not settings.openrouter_api_key:
             log.debug("generate_explanation: LLM disabled or no API key — returning empty")
             return ""
 
@@ -129,18 +133,38 @@ async def generate_explanation(
         from langchain_core.prompts import PromptTemplate  # noqa: PLC0415
         from langchain_openai import ChatOpenAI  # noqa: PLC0415
 
-        prompt_values = _build_prompt_values(symbol, direction, confidence, ind, reasons)
+        # Fetch relevant knowledge context based on signal reasons
+        knowledge_context = ""
+        try:
+            from app.knowledge.base import get_relevant_context  # noqa: PLC0415
+            # Extract keywords from reasons for knowledge lookup
+            keywords = [r.split("(")[0].strip().lower() for r in reasons if r]
+            knowledge_context = get_relevant_context(keywords, max_chars=2000)
+            if knowledge_context:
+                knowledge_context = f"Reference knowledge:\n{knowledge_context}"
+        except ImportError:
+            pass  # Knowledge base module not available — proceed without it
+
+        prompt_values = _build_prompt_values(
+            symbol, direction, confidence, ind, reasons, knowledge_context
+        )
 
         prompt = PromptTemplate(
             input_variables=list(prompt_values.keys()),
             template=_EXPLANATION_TEMPLATE,
         )
 
+        # OpenRouter-compatible: ChatOpenAI accepts base_url to redirect to any OpenAI-compatible API
         llm = ChatOpenAI(
-            model="gpt-4o-mini",
-            api_key=settings.openai_api_key,
+            model=settings.openrouter_model,
+            api_key=settings.openrouter_api_key,
+            base_url="https://openrouter.ai/api/v1",
             temperature=0.3,
             max_tokens=200,
+            default_headers={
+                "HTTP-Referer": settings.frontend_url,
+                "X-Title": "Trading Bot",
+            },
         )
 
         chain = prompt | llm

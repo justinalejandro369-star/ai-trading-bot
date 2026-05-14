@@ -39,37 +39,37 @@ export default function Landing() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100">
+    <div className="min-h-screen bg-[#111417] text-[var(--kt-on-surface)]">
       {/* Hero */}
       <section className="relative flex flex-col items-center justify-center px-4 pt-24 pb-20 text-center">
         <div
           className="absolute inset-0 opacity-5"
           style={{
             backgroundImage:
-              'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)',
+              'linear-gradient(#424654 1px, transparent 1px), linear-gradient(90deg, #424654 1px, transparent 1px)',
             backgroundSize: '48px 48px',
           }}
         />
         <div className="relative z-10 max-w-3xl">
-          <h1 className="text-5xl font-bold tracking-tight mb-6 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold tracking-tight mb-6 bg-gradient-to-r from-[#B2C5FF] to-[#44E092] bg-clip-text text-transparent">
             AI-Powered Trading Intelligence
           </h1>
-          <p className="text-xl text-slate-400 mb-10 leading-relaxed">
+          <p className="text-xl text-[var(--kt-on-surface-variant)] mb-10 leading-relaxed">
             Scan stocks and crypto in real-time. Surface high-confidence
             opportunities. Make faster, smarter decisions.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Button
               size="lg"
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-gradient-to-r from-[var(--kt-primary-container)] to-[var(--kt-secondary-container)] text-white hover:opacity-90"
               onClick={() => navigate('/login')}
             >
               Start Trading
             </Button>
             <Button
               size="lg"
-              variant="outline"
-              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+              variant="ghost"
+              className="text-[var(--kt-on-surface-variant)] hover:bg-[var(--kt-surface-container-high)] hover:text-[var(--kt-on-surface)]"
               onClick={() => navigate('/dashboard')}
             >
               View Demo
@@ -78,18 +78,18 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Feature grid */}
+      {/* Feature grid — No-Line Rule: tonal background shift */}
       <section className="max-w-6xl mx-auto px-4 pb-24">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature) => (
-            <Card key={feature.title} className="bg-slate-800 border-slate-700">
+            <Card key={feature.title} className="bg-[var(--kt-surface-container-low)] border-none">
               <CardHeader>
-                <CardTitle className="text-slate-100 text-lg">
+                <CardTitle className="text-[var(--kt-on-surface)] text-lg">
                   {feature.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-400 text-sm leading-relaxed">
+                <p className="text-[var(--kt-on-surface-variant)] text-sm leading-relaxed">
                   {feature.description}
                 </p>
               </CardContent>
@@ -99,7 +99,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800 py-8 text-center text-slate-500 text-sm">
+      <footer className="border-t border-[rgba(66,70,84,0.15)] py-8 text-center text-[var(--kt-on-surface-variant)] text-sm">
         Built with Python + FastAPI + React. Zero data costs.
       </footer>
     </div>

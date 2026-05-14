@@ -32,3 +32,19 @@ export async function getCandles(
 export async function getIndicators(symbol: string): Promise<Record<string, number>> {
   return apiGet<Record<string, number>>(`/api/indicators/${symbol}`)
 }
+
+export async function getIndicatorSeries(
+  symbol: string,
+  interval = '1D',
+  limit = 200,
+): Promise<import('@/types').IndicatorSeries> {
+  return apiGet(`/api/indicator-series/${symbol}?interval=${interval}&limit=${limit}`)
+}
+
+export async function getChartAnalysis(
+  symbol: string,
+  interval = '1D',
+  pivotMethod = 'standard',
+): Promise<import('@/types').ChartAnalysis> {
+  return apiGet(`/api/chart-analysis/${symbol}?interval=${interval}&pivot_method=${pivotMethod}`)
+}

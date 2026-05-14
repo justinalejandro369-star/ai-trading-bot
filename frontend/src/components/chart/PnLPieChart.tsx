@@ -6,15 +6,17 @@ import {
   Legend,
   Cell,
 } from 'recharts'
+import { useChartColors } from '@/hooks/useChartColors'
 import type { PaperPosition } from '@/types'
 
-const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+const COLORS = ['#44E092', '#5D8BFF', '#FFB3AD', '#FF5451', '#B2C5FF', '#03C177']
 
 interface Props {
   positions: PaperPosition[]
 }
 
 export default function PnLPieChart({ positions }: Props) {
+  const colors = useChartColors()
   const totalValue = positions.reduce((sum, p) => sum + p.quantity * p.avg_entry_price, 0)
   const chartData = positions.map((p) => ({
     symbol: p.symbol,
@@ -26,7 +28,7 @@ export default function PnLPieChart({ positions }: Props) {
     return (
       <div
         data-testid="allocation-pie-chart"
-        className="flex items-center justify-center h-[200px] text-slate-500 text-sm"
+        className="flex items-center justify-center h-[200px] text-muted-foreground text-sm"
       >
         No positions
       </div>
@@ -49,7 +51,7 @@ export default function PnLPieChart({ positions }: Props) {
           ))}
         </Pie>
         <Tooltip
-          contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: 6 }}
+          contentStyle={{ backgroundColor: colors.tooltipBg, border: `1px solid ${colors.tooltipBorder}`, borderRadius: 6 }}
           formatter={(val: unknown, name: unknown) => {
             const v = val as number
             const n = name as string
@@ -57,7 +59,7 @@ export default function PnLPieChart({ positions }: Props) {
           }}
         />
         <Legend
-          formatter={(val) => <span style={{ color: '#94a3b8', fontSize: 12 }}>{val}</span>}
+          formatter={(val) => <span style={{ color: colors.legendText, fontSize: 12 }}>{val}</span>}
         />
       </PieChart>
     </ResponsiveContainer>

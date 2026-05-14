@@ -61,3 +61,24 @@ node_modules/
 
 # uv
 # Include uv.lock for reproducible builds
+
+# AI tooling / agent state (local only)
+.claude/
+.claire/
+.playwright-mcp/
+.cursor/
+.aider*
+.agents/
+
+# Planning / workflow artifacts (local only)
+.planning/
+get-shit-done/
+
+# Misc local files
+*.original.md
+
+# Playwright artifacts
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+frontend/playwright/.cache/

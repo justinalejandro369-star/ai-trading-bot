@@ -5,14 +5,8 @@ test.describe('Backtest Results', () => {
   test.beforeEach(async ({ page }) => {
     await mockBackend(page)
     await page.goto('/dashboard')
-    await page.getByRole('tab', { name: /backtest/i }).click()
-  })
-
-  test('backtest tab content area is visible without crash', async ({
-    page,
-  }) => {
-    const activePanel = page.locator('[data-slot="tabs-content"]').last()
-    await expect(activePanel).toBeVisible()
+    // Navigate to Backtesting via sidebar
+    await page.getByTestId('sidebar-nav').getByText('Backtesting').click()
   })
 
   test('backtest results root component renders when implemented', async ({
@@ -29,8 +23,9 @@ test.describe('Backtest Results', () => {
   }) => {
     const results = page.getByTestId('backtest-results')
     if (await results.count() > 0) {
+      // Scope to the form inside backtest-results to avoid matching the sub-view toggle
       await expect(
-        page.getByRole('button', { name: /run backtest/i }),
+        results.getByRole('button', { name: /run backtest/i }),
       ).toBeVisible()
     }
   })
@@ -38,11 +33,16 @@ test.describe('Backtest Results', () => {
   test('clicking Run Backtest calls POST /api/backtest when implemented', async ({
     page,
   }) => {
-    const runButton = page.getByRole('button', { name: /run backtest/i })
+    const results = page.getByTestId('backtest-results')
+    if (await results.count() === 0) return
+
+    const runButton = results.getByRole('button', { name: /run backtest/i })
     if (await runButton.count() === 0) return
 
     let backtestCalled = false
     await page.route('**/api/backtest', async (route) => {
+      // Only intercept POST, let GET /api/backtest/runs* through
+      if (route.request().url().includes('/api/backtest/runs')) return route.fallback()
       backtestCalled = true
       await route.fulfill({
         status: 200,
@@ -68,21 +68,27 @@ test.describe('Backtest Results', () => {
   test('backtest metrics show Sharpe ratio after run when implemented', async ({
     page,
   }) => {
-    const runButton = page.getByRole('button', { name: /run backtest/i })
+    const results = page.getByTestId('backtest-results')
+    if (await results.count() === 0) return
+
+    const runButton = results.getByRole('button', { name: /run backtest/i })
     if (await runButton.count() === 0) return
 
     await runButton.click()
     const metrics = page.getByTestId('backtest-metrics')
     if (await metrics.count() > 0) {
       await expect(metrics).toBeVisible({ timeout: 8000 })
-      await expect(metrics.getByText(/1\.2|sharpe/i)).toBeVisible()
+      await expect(metrics.getByText('1.20')).toBeVisible()
     }
   })
 
   test('backtest equity chart renders after run when implemented', async ({
     page,
   }) => {
-    const runButton = page.getByRole('button', { name: /run backtest/i })
+    const results = page.getByTestId('backtest-results')
+    if (await results.count() === 0) return
+
+    const runButton = results.getByRole('button', { name: /run backtest/i })
     if (await runButton.count() === 0) return
 
     await runButton.click()
@@ -106,6 +112,7 @@ test.describe('Backtest Results', () => {
 
     let requestBody: Record<string, unknown> = {}
     await page.route('**/api/backtest', async (route) => {
+      if (route.request().url().includes('/api/backtest/runs')) return route.fallback()
       const postData = route.request().postData()
       if (postData) {
         requestBody = JSON.parse(postData) as Record<string, unknown>
@@ -124,7 +131,8 @@ test.describe('Backtest Results', () => {
       })
     })
 
-    const runButton = page.getByRole('button', { name: /run backtest/i })
+    const results = page.getByTestId('backtest-results')
+    const runButton = results.getByRole('button', { name: /run backtest/i })
     await runButton.click()
 
     const metrics = page.getByTestId('backtest-metrics')
@@ -134,7 +142,7 @@ test.describe('Backtest Results', () => {
     }
   })
 
-  test('no JavaScript errors on backtest tab', async ({ page }) => {
+  test('no JavaScript errors on backtest section', async ({ page }) => {
     const errors: string[] = []
     page.on('console', (msg) => {
       if (msg.type() === 'error') errors.push(msg.text())
@@ -144,5 +152,19 @@ test.describe('Backtest Results', () => {
       (e) => !e.includes('favicon') && !e.includes('404'),
     )
     expect(realErrors).toHaveLength(0)
+  })
+
+  test('performance audit sub-view toggle is visible', async ({ page }) => {
+    await expect(
+      page.getByRole('button', { name: /performance audit/i }),
+    ).toBeVisible()
+  })
+
+  test('switching to performance audit shows audit component', async ({
+    page,
+  }) => {
+    await page.getByRole('button', { name: /performance audit/i }).click()
+    // Should show the performance audit heading (use role to avoid matching the toggle button too)
+    await expect(page.getByRole('heading', { name: /performance audit/i })).toBeVisible({ timeout: 5000 })
   })
 })

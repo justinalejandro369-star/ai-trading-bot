@@ -5,21 +5,18 @@ test.describe('Signal Feed', () => {
   test.beforeEach(async ({ page }) => {
     await mockBackend(page)
     await page.goto('/dashboard')
-    await page.getByRole('tab', { name: /signals/i }).click()
+    // Navigate to Market Scanner via sidebar
+    await page.getByTestId('sidebar-nav').getByText('Market Scanner').click()
   })
 
-  test('signals tab content area is visible', async ({ page }) => {
-    const activePanel = page.locator('[data-slot="tabs-content"]').last()
-    await expect(activePanel).toBeVisible()
+  test('signal feed heading is visible', async ({ page }) => {
+    await expect(page.getByText('AI Signal Feed')).toBeVisible()
   })
 
   test('renders AAPL BUY signal card from mock data when SignalFeed exists', async ({
     page,
   }) => {
-    // This test validates the testid contract — will pass once SignalFeed is implemented
     const card = page.getByTestId('signal-aapl')
-    const panelVisible = page.locator('[data-slot="tabs-content"]').last()
-    await expect(panelVisible).toBeVisible()
     // If SignalFeed is present, assert card content
     if (await card.count() > 0) {
       await expect(card).toBeVisible()
@@ -74,7 +71,8 @@ test.describe('Signal Feed', () => {
       }),
     )
     await page.reload()
-    await page.getByRole('tab', { name: /signals/i }).click()
+    // Re-navigate to Market Scanner after reload
+    await page.getByTestId('sidebar-nav').getByText('Market Scanner').click()
 
     const sellCard = page.getByTestId('signal-msft')
     if (await sellCard.count() > 0) {
@@ -113,11 +111,10 @@ test.describe('Signal Feed', () => {
     })
 
     await page.goto('/dashboard')
-    await page.getByRole('tab', { name: /signals/i }).click()
+    await page.getByTestId('sidebar-nav').getByText('Market Scanner').click()
 
-    // Panel must be visible; if WS handler injects signal card, assert it
-    const panel = page.locator('[data-slot="tabs-content"]').last()
-    await expect(panel).toBeVisible()
+    // Feed heading must be visible
+    await expect(page.getByText('AI Signal Feed')).toBeVisible()
 
     const msftCard = page.getByTestId('signal-msft')
     if (await msftCard.count() > 0) {

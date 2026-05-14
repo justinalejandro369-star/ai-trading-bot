@@ -15,8 +15,8 @@ export default function SignalFeed() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <h2 className="text-lg font-semibold text-slate-100">AI Signal Feed</h2>
-        <Badge variant="secondary" className="bg-slate-700 text-slate-300">
+        <h2 className="text-lg font-semibold text-[var(--kt-on-surface)]">AI Signal Feed</h2>
+        <Badge variant="secondary" className="bg-[var(--kt-surface-container-high)] text-[var(--kt-on-surface-variant)]">
           {signals.length}
         </Badge>
       </div>
@@ -26,15 +26,15 @@ export default function SignalFeed() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-32 rounded-lg bg-slate-800 border border-slate-700 animate-pulse"
+              className="h-32 rounded-lg bg-[var(--kt-surface-container-low)] animate-pulse"
             />
           ))}
         </div>
       )}
 
       {!isLoading && signals.length === 0 && (
-        <div className="flex items-center justify-center h-40 bg-slate-800 rounded-lg border border-slate-700">
-          <p className="text-slate-400 text-sm">
+        <div className="flex items-center justify-center h-40 bg-[var(--kt-surface-container-low)] rounded-lg">
+          <p className="text-[var(--kt-on-surface-variant)] text-sm">
             No signals yet — scanner runs every 5 minutes
           </p>
         </div>
