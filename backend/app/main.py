@@ -32,6 +32,7 @@ from app.api.routes.indicators import router as indicators_router
 from app.api.routes.market_data import router as market_data_router
 from app.api.routes.paper_trading import router as paper_trading_router
 from app.api.routes.signals import router as signals_router
+from app.api.routes.strategies import router as strategies_router
 from app.api.routes.websocket import router as ws_router
 from app.core.auth import get_current_user
 from app.core.config import settings
@@ -97,6 +98,7 @@ _auth_dep = [Depends(get_current_user)]
 app.include_router(market_data_router, prefix="/api", dependencies=_auth_dep)
 app.include_router(indicators_router, prefix="/api", dependencies=_auth_dep)
 app.include_router(signals_router, prefix="/api", dependencies=_auth_dep)
+app.include_router(strategies_router, prefix="/api", dependencies=_auth_dep)
 app.include_router(backtest_router, prefix="/api", dependencies=_auth_dep)
 app.include_router(paper_trading_router, prefix="/api", dependencies=_auth_dep)
 app.include_router(alerts_router, prefix="/api", dependencies=_auth_dep)

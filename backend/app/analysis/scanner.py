@@ -1,18 +1,25 @@
 """
-Market scanner: iterates all monitored assets, computes indicators, scores signals,
+Market scanner: iterates monitored assets, runs each registered strategy,
 and upserts results to the signals table.
 
 Design:
-  - scan_asset(): fetches candles for ONE asset, computes indicators, upserts signal
-  - scan_all_assets(): iterates STOCK_WATCHLIST + CCXT_CRYPTO_SYMBOLS
+  - scan_asset(): for ONE asset + ONE strategy, computes indicators and upserts
+  - scan_all_assets(): iterates strategies × (STOCK_WATCHLIST + CCXT_CRYPTO_SYMBOLS)
   - analysis_scan_job(): async APScheduler wrapper -- called by scheduler.py
 
-Scan interval: 1D only. Multi-timeframe correlation deferred to Phase 7.
+Strategy abstraction:
+  Each strategy is a BaseStrategy instance. The default is BaselineStrategy
+  (the legacy scoring rules). Additional strategies coexist on the same
+  (symbol, interval) — the PK includes strategy_name. The signals table is
+  upserted with ON CONFLICT (symbol, interval, strategy_name) DO UPDATE so
+  every scan refreshes the row in place.
 
-Anti-pattern avoided:
-  - Indicators computed once per asset from a single DB query (no N+1)
-  - Computation is synchronous pandas -- acceptable at MVP scale (~50 assets, <10ms each)
-  - ON CONFLICT DO UPDATE (not DO NOTHING) ensures signals are always refreshed
+Anti-patterns avoided:
+  - Indicators computed once per (asset, scan) — even for multiple strategies
+    we still call compute_indicators() per asset to avoid double work via
+    caching at the IndicatorSet layer (TODO: per-asset memoization is future).
+  - Strategy errors are caught per-asset — one bad strategy never crashes
+    the scan loop.
 """
 import json
 import logging
@@ -28,12 +35,21 @@ from app.analysis.indicators import MIN_CANDLES, IndicatorSet, compute_indicator
 from app.analysis.llm_advisor import get_llm_advisory
 from app.analysis.multiframe import compute_multiframe_agreement
 from app.analysis.regime import detect_regime
-from app.analysis.signals import apply_llm_advisory, score_signal
+from app.analysis.signals import apply_llm_advisory
 from app.core.database import async_session_factory
 from app.core.watchlists import CCXT_CRYPTO_SYMBOLS, STOCK_WATCHLIST
 from app.models.signal import TradingSignal
+from app.strategies import STRATEGY_REGISTRY
+from app.strategies.base import BaseStrategy
+from app.strategies.baseline import BaselineStrategy
 
-__all__ = ["SCAN_INTERVAL", "scan_asset", "scan_all_assets", "analysis_scan_job"]
+__all__ = [
+    "SCAN_INTERVAL",
+    "DEFAULT_STRATEGIES",
+    "scan_asset",
+    "scan_all_assets",
+    "analysis_scan_job",
+]
 
 log = logging.getLogger(__name__)
 
@@ -44,23 +60,35 @@ SCAN_INTERVAL: str = "1d"
 _FETCH_LIMIT: int = MIN_CANDLES + 20
 
 
+def _default_strategies() -> list[BaseStrategy]:
+    """Default to baseline only. To enable more strategies in production, set
+    the SCANNER_STRATEGIES env var or pass an explicit list to scan_all_assets()."""
+    return [BaselineStrategy()]
+
+
+DEFAULT_STRATEGIES = _default_strategies
+
+
 async def scan_asset(
     symbol: str,
     market: str,
     session: AsyncSession,
+    strategy: BaseStrategy | None = None,
 ) -> TradingSignal | None:
-    """
-    Fetch candles for one asset, compute indicators + signal, upsert to DB.
+    """Fetch candles for one asset, run ``strategy`` over them, upsert to DB.
 
     Returns None if insufficient candle history (< MIN_CANDLES rows).
     Returns the upserted TradingSignal on success.
 
     Args:
-        symbol: Asset symbol (e.g. "AAPL", "BTC/USDT")
-        market: "stock" or "crypto"
-        session: Active SQLAlchemy async session (caller manages lifecycle)
+        symbol: Asset symbol (e.g. "AAPL", "BTC/USDT").
+        market: "stock" or "crypto".
+        session: Active SQLAlchemy async session (caller manages lifecycle).
+        strategy: BaseStrategy instance. Defaults to BaselineStrategy().
     """
-    # Fetch candles ordered ASC (oldest first) for indicator computation
+    if strategy is None:
+        strategy = BaselineStrategy()
+
     result = await session.execute(
         text("""
             SELECT timestamp, open, high, low, close, volume
@@ -90,7 +118,6 @@ async def scan_asset(
     if ind is None:
         return None
 
-    # Compute ATR SMA for regime detection (20-period SMA of ATR column)
     atr_sma_20: float | None = None
     atr_series = ta.atr(df["high"], df["low"], df["close"], length=14)
     if atr_series is not None:
@@ -100,19 +127,17 @@ async def scan_asset(
             atr_sma_20 = float(vals.iloc[-1])
 
     regime = detect_regime(ind, atr_sma_20=atr_sma_20)
-    signal = score_signal(ind)
+    signal = strategy.generate_signal(ind)
 
-    # LLM advisory: ask LLM to review indicators and suggest confidence adjustment
+    # LLM advisory: review indicators and adjust confidence (no-op if disabled)
     advisory = await get_llm_advisory(
         ind=ind,
         regime=regime,
         direction=signal.direction,
         confidence=signal.confidence,
     )
-    # Apply LLM adjustment to confidence (clamped, may change direction)
     signal = apply_llm_advisory(signal, advisory)
 
-    # Generate LLM explanation (gracefully disabled if llm_enabled=False)
     explanation = await generate_explanation(
         symbol=symbol,
         direction=signal.direction,
@@ -121,27 +146,25 @@ async def scan_asset(
         reasons=signal.reasons,
     )
 
-    # Phase 7: compute multi-timeframe agreement (reads existing DB signals)
     multiframe = await compute_multiframe_agreement(symbol, session)
 
     now = datetime.now(tz=timezone.utc)
 
-    # Upsert: ON CONFLICT DO UPDATE refreshes the signal on every scan
     await session.execute(
         text("""
             INSERT INTO signals
-                (symbol, interval, scanned_at, direction, confidence, regime,
+                (symbol, interval, strategy_name, scanned_at, direction, confidence, regime,
                  close, entry_price, stop_loss, target_price,
                  rsi_14, macd_val, adx_14, atr_14, reasons,
                  explanation, multiframe_agreement,
                  llm_adjustment, llm_reasoning, llm_patterns)
             VALUES
-                (:symbol, :interval, :scanned_at, :direction, :confidence, :regime,
+                (:symbol, :interval, :strategy_name, :scanned_at, :direction, :confidence, :regime,
                  :close, :entry_price, :stop_loss, :target_price,
                  :rsi_14, :macd_val, :adx_14, :atr_14, :reasons,
                  :explanation, :multiframe_agreement,
                  :llm_adjustment, :llm_reasoning, :llm_patterns)
-            ON CONFLICT (symbol, interval) DO UPDATE SET
+            ON CONFLICT (symbol, interval, strategy_name) DO UPDATE SET
                 scanned_at            = excluded.scanned_at,
                 direction             = excluded.direction,
                 confidence            = excluded.confidence,
@@ -164,6 +187,7 @@ async def scan_asset(
         {
             "symbol": symbol,
             "interval": SCAN_INTERVAL,
+            "strategy_name": strategy.name,
             "scanned_at": now,
             "direction": signal.direction,
             "confidence": signal.confidence,
@@ -187,17 +211,18 @@ async def scan_asset(
     await session.commit()
 
     log.info(
-        "scan_asset: %s -> %s (confidence=%d, regime=%s)",
+        "scan_asset: %s [%s] -> %s (confidence=%d, regime=%s)",
         symbol,
+        strategy.name,
         signal.direction,
         signal.confidence,
         regime,
     )
 
-    # Return the upserted signal for testing and logging
     return TradingSignal(
         symbol=symbol,
         interval=SCAN_INTERVAL,
+        strategy_name=strategy.name,
         scanned_at=now,
         direction=signal.direction,
         confidence=signal.confidence,
@@ -219,46 +244,67 @@ async def scan_asset(
     )
 
 
-async def scan_all_assets(session: AsyncSession) -> int:
-    """
-    Scan all monitored assets: stocks + crypto.
+async def scan_all_assets(
+    session: AsyncSession,
+    strategies: list[BaseStrategy] | None = None,
+) -> int:
+    """Scan all monitored assets across all selected strategies.
 
-    Iterates STOCK_WATCHLIST and CCXT_CRYPTO_SYMBOLS (from scheduler.py).
-    Assets with insufficient history are silently skipped (logged at DEBUG).
-    Individual asset failures are caught and logged -- other assets continue.
+    Iterates ``strategies × (STOCK_WATCHLIST + CCXT_CRYPTO_SYMBOLS)``. Assets
+    with insufficient history are silently skipped. Individual asset/strategy
+    failures are caught and logged so one bad combination cannot crash the
+    full scan.
+
+    Args:
+        session: Active async session.
+        strategies: Strategies to run. Defaults to [BaselineStrategy()] —
+            preserves the pre-pluggable-interface behavior.
 
     Returns:
-        Number of signals successfully upserted.
+        Number of (symbol, strategy) signals successfully upserted.
     """
+    if strategies is None:
+        strategies = _default_strategies()
+
     scanned = 0
 
-    for symbol in STOCK_WATCHLIST:
-        try:
-            result = await scan_asset(symbol, "stock", session)
-            if result is not None:
-                scanned += 1
-        except Exception as exc:
-            log.error("scan_all_assets: error scanning stock %s: %s", symbol, exc)
+    for strategy in strategies:
+        for symbol in STOCK_WATCHLIST:
+            try:
+                result = await scan_asset(symbol, "stock", session, strategy=strategy)
+                if result is not None:
+                    scanned += 1
+            except Exception as exc:
+                log.error(
+                    "scan_all_assets: error scanning stock %s with %s: %s",
+                    symbol,
+                    strategy.name,
+                    exc,
+                )
 
-    for symbol in CCXT_CRYPTO_SYMBOLS:
-        try:
-            result = await scan_asset(symbol, "crypto", session)
-            if result is not None:
-                scanned += 1
-        except Exception as exc:
-            log.error("scan_all_assets: error scanning crypto %s: %s", symbol, exc)
+        for symbol in CCXT_CRYPTO_SYMBOLS:
+            try:
+                result = await scan_asset(symbol, "crypto", session, strategy=strategy)
+                if result is not None:
+                    scanned += 1
+            except Exception as exc:
+                log.error(
+                    "scan_all_assets: error scanning crypto %s with %s: %s",
+                    symbol,
+                    strategy.name,
+                    exc,
+                )
 
-    log.info("scan_all_assets: complete -- %d signals upserted", scanned)
+    log.info(
+        "scan_all_assets: complete -- %d signals upserted across %d strategies",
+        scanned,
+        len(strategies),
+    )
     return scanned
 
 
 async def analysis_scan_job() -> None:
-    """
-    APScheduler job wrapper for scan_all_assets().
-
-    Creates its own DB session (same pattern as stock_incremental_job in scheduler.py).
-    Errors are caught at the top level -- a failed scan never crashes the scheduler.
-    """
+    """APScheduler job wrapper for scan_all_assets()."""
     try:
         async with async_session_factory() as session:
             count = await scan_all_assets(session)

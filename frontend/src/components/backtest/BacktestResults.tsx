@@ -1,28 +1,43 @@
 import { useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { runBacktest } from '@/api/backtest'
+import { getStrategies } from '@/api/strategies'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import EquityCurveChart from '@/components/chart/EquityCurveChart'
-import type { BacktestResult } from '@/types'
+import type { BacktestResult, Strategy } from '@/types'
 
 const INTERVALS = ['1D', '4H', '1H']
 
 export default function BacktestResults() {
   const [symbol, setSymbol] = useState('AAPL')
   const [interval, setInterval] = useState('1D')
+  const [strategyName, setStrategyName] = useState('baseline')
+
+  const { data: strategies = [] } = useQuery<Strategy[]>({
+    queryKey: ['strategies'],
+    queryFn: getStrategies,
+    staleTime: 5 * 60_000,
+  })
 
   const { mutate, isPending, data: result, error } = useMutation<
     BacktestResult,
     Error,
-    { symbol: string; interval: string; initial_cash: number; commission: number; slippage_pct: number }
+    { symbol: string; interval: string; initial_cash: number; commission: number; slippage_pct: number; strategy_name: string }
   >({
     mutationFn: runBacktest,
   })
 
   const handleRun = () => {
-    mutate({ symbol, interval, initial_cash: 10000, commission: 0.001, slippage_pct: 0.001 })
+    mutate({
+      symbol,
+      interval,
+      initial_cash: 10000,
+      commission: 0.001,
+      slippage_pct: 0.001,
+      strategy_name: strategyName,
+    })
   }
 
   // Backend returns equity_curve as [[iso_string, value], ...] tuples
@@ -56,6 +71,22 @@ export default function BacktestResults() {
           >
             {INTERVALS.map((i) => (
               <option key={i} value={i}>{i}</option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1">
+          <label className="label-terminal text-[var(--kt-on-surface-variant)]">Strategy</label>
+          <select
+            data-testid="strategy-select"
+            value={strategyName}
+            onChange={(e) => setStrategyName(e.target.value)}
+            className="bg-[var(--kt-surface-container-lowest)] border border-[rgba(66,70,84,0.15)] text-[var(--kt-on-surface)] text-sm rounded px-2 py-2 h-9 focus:outline-none focus:ring-1 focus:ring-[var(--kt-primary-container)]"
+          >
+            {strategies.length === 0 && <option value="baseline">baseline</option>}
+            {strategies.map((s) => (
+              <option key={s.name} value={s.name}>
+                {s.name}
+              </option>
             ))}
           </select>
         </div>

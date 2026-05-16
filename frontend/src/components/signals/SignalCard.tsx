@@ -36,14 +36,23 @@ export default function SignalCard({ signal }: { signal: Signal }) {
       className="bg-[var(--kt-surface-container-low)] border-none"
     >
       <CardContent className="p-4 space-y-2">
-        {/* Header row: direction badge, symbol, regime */}
-        <div className="flex items-center gap-2">
+        {/* Header row: direction badge, symbol, strategy, regime */}
+        <div className="flex items-center gap-2 flex-wrap">
           <span
             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${directionClass(signal.direction)}`}
           >
             {signal.direction}
           </span>
           <span className="font-bold text-[var(--kt-on-surface)]">{signal.symbol}</span>
+          {signal.strategy_name && (
+            <span
+              data-testid={`strategy-${signal.symbol.toLowerCase()}`}
+              className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider bg-[var(--kt-primary-container)]/20 text-[var(--primary)] border border-[var(--kt-primary-container)]/30"
+              title={`Strategy: ${signal.strategy_name}`}
+            >
+              {signal.strategy_name}
+            </span>
+          )}
           <span className="text-xs text-[var(--kt-on-surface-variant)] italic ml-auto">{signal.regime}</span>
         </div>
 

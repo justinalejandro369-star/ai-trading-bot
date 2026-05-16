@@ -11,6 +11,7 @@ import SignalFeed from '@/components/signals/SignalFeed'
 import PortfolioView from '@/components/portfolio/PortfolioView'
 import BacktestResults from '@/components/backtest/BacktestResults'
 import PerformanceAudit from '@/components/backtest/PerformanceAudit'
+import StrategyCompare from '@/components/backtest/StrategyCompare'
 import Education from '@/pages/Education'
 import ChatWidget from '@/components/chat/ChatWidget'
 import { Button } from '@/components/ui/button'
@@ -22,8 +23,8 @@ export default function Dashboard() {
   const { isAuthenticated, username, checkAuth, clearAuth } = useAuthStore()
   // Track active sidebar section for content switching and contextual chat
   const [activeSection, setActiveSection] = useState('dashboard')
-  // Toggle between backtest runner and performance audit views
-  const [showAudit, setShowAudit] = useState(false)
+  // Backtesting sub-view selector
+  const [backtestView, setBacktestView] = useState<'run' | 'audit' | 'compare'>('run')
 
   useWebSocket(`${WS_URL}/ws/live`)
 
@@ -58,28 +59,38 @@ export default function Dashboard() {
           {/* Portfolio: Paper trading view */}
           {activeSection === 'portfolio' && <PortfolioView />}
 
-          {/* Backtesting: Run Backtest + Performance Audit */}
+          {/* Backtesting: Run Backtest + Performance Audit + Strategy Compare */}
           {activeSection === 'backtesting' && (
             <>
               <div className="flex items-center gap-2 mb-4">
                 <Button
-                  variant={showAudit ? 'ghost' : 'default'}
+                  variant={backtestView === 'run' ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => setShowAudit(false)}
-                  className={showAudit ? 'text-[var(--kt-on-surface-variant)]' : ''}
+                  onClick={() => setBacktestView('run')}
+                  className={backtestView !== 'run' ? 'text-[var(--kt-on-surface-variant)]' : ''}
                 >
                   Run Backtest
                 </Button>
                 <Button
-                  variant={showAudit ? 'default' : 'ghost'}
+                  variant={backtestView === 'audit' ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => setShowAudit(true)}
-                  className={!showAudit ? 'text-[var(--kt-on-surface-variant)]' : ''}
+                  onClick={() => setBacktestView('audit')}
+                  className={backtestView !== 'audit' ? 'text-[var(--kt-on-surface-variant)]' : ''}
                 >
                   Performance Audit
                 </Button>
+                <Button
+                  variant={backtestView === 'compare' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setBacktestView('compare')}
+                  className={backtestView !== 'compare' ? 'text-[var(--kt-on-surface-variant)]' : ''}
+                >
+                  Compare Strategies
+                </Button>
               </div>
-              {showAudit ? <PerformanceAudit /> : <BacktestResults />}
+              {backtestView === 'run' && <BacktestResults />}
+              {backtestView === 'audit' && <PerformanceAudit />}
+              {backtestView === 'compare' && <StrategyCompare />}
             </>
           )}
 

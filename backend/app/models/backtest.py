@@ -25,6 +25,7 @@ class BacktestRun(Base):
     id            = Column(Integer,                primary_key=True, autoincrement=True)
     symbol        = Column(String(20),             nullable=False, index=True)
     interval      = Column(String(5),              nullable=False)
+    strategy_name = Column(String(64),             nullable=False, default="baseline", server_default="baseline", index=True)
     run_at        = Column(DateTime(timezone=True), nullable=False)
     commission    = Column(Float,                  nullable=False)
     slippage      = Column(Float,                  nullable=False)

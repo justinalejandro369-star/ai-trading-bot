@@ -17,6 +17,7 @@ export interface MultiframeAgreement {
 export interface Signal {
   symbol: string
   interval: string
+  strategy_name: string
   scanned_at: string
   direction: 'BUY' | 'SELL' | 'HOLD'
   confidence: number
@@ -35,6 +36,13 @@ export interface Signal {
   llm_adjustment: number
   llm_reasoning: string
   llm_patterns: string[]
+}
+
+export interface Strategy {
+  name: string
+  version: string
+  description: string
+  required_indicators: string[]
 }
 
 export interface PaperPosition {
@@ -59,6 +67,7 @@ export interface EquityPoint {
 }
 
 export interface BacktestResult {
+  strategy_name: string
   sharpe_ratio: number
   max_drawdown: number
   win_rate: number
@@ -73,6 +82,7 @@ export interface BacktestRunSummary {
   id: number
   symbol: string
   interval: string
+  strategy_name: string
   run_at: string
   sharpe_ratio: number | null
   max_drawdown: number | null
