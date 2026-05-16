@@ -63,7 +63,10 @@ node_modules/
 # Include uv.lock for reproducible builds
 
 # AI tooling / agent state (local only)
-.claude/
+# Ignore everything inside .claude/ EXCEPT shared agents and skills.
+.claude/*
+!.claude/agents/
+!.claude/skills/
 .claire/
 .playwright-mcp/
 .cursor/
