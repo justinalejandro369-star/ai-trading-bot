@@ -15,6 +15,7 @@ from tests.conftest import make_ohlcv_df
 # These imports fail until engine.py is created (RED phase)
 from app.backtesting.engine import run_backtest
 from app.backtesting.models import BacktestResult
+from app.strategies.baseline import BaselineStrategy
 
 
 # ---------------------------------------------------------------------------
@@ -39,13 +40,13 @@ def df_small():
 
 def test_run_backtest_returns_backtest_result(df_500):
     """run_backtest() returns a BacktestResult for sufficient data."""
-    result = run_backtest(df_500)
+    result = run_backtest(df_500, BaselineStrategy())
     assert isinstance(result, BacktestResult)
 
 
 def test_backtest_result_has_required_fields(df_500):
     """BacktestResult has all 7 required fields with correct types."""
-    result = run_backtest(df_500)
+    result = run_backtest(df_500, BaselineStrategy())
     assert isinstance(result.sharpe_ratio, float)
     assert isinstance(result.max_drawdown, float)
     assert isinstance(result.win_rate, float)
@@ -58,7 +59,7 @@ def test_backtest_result_has_required_fields(df_500):
 def test_run_backtest_raises_on_insufficient_data(df_small):
     """run_backtest() raises ValueError when df has fewer than MIN_CANDLES rows."""
     with pytest.raises(ValueError, match="Insufficient data"):
-        run_backtest(df_small)
+        run_backtest(df_small, BaselineStrategy())
 
 
 # ---------------------------------------------------------------------------
@@ -67,25 +68,25 @@ def test_run_backtest_raises_on_insufficient_data(df_small):
 
 def test_win_rate_is_fraction_not_percent(df_500):
     """win_rate must be in [0.0, 1.0] — a fraction, not a percentage."""
-    result = run_backtest(df_500)
+    result = run_backtest(df_500, BaselineStrategy())
     assert 0.0 <= result.win_rate <= 1.0
 
 
 def test_max_drawdown_is_non_positive(df_500):
     """max_drawdown must be <= 0.0 (it represents a loss)."""
-    result = run_backtest(df_500)
+    result = run_backtest(df_500, BaselineStrategy())
     assert result.max_drawdown <= 0.0
 
 
 def test_total_trades_is_non_negative(df_500):
     """total_trades must be a non-negative integer."""
-    result = run_backtest(df_500)
+    result = run_backtest(df_500, BaselineStrategy())
     assert result.total_trades >= 0
 
 
 def test_equity_curve_is_list_of_pairs(df_500):
     """equity_curve is a non-empty list of [iso_timestamp_str, float] pairs."""
-    result = run_backtest(df_500)
+    result = run_backtest(df_500, BaselineStrategy())
     assert len(result.equity_curve) > 0
     first = result.equity_curve[0]
     assert len(first) == 2
@@ -99,8 +100,8 @@ def test_equity_curve_is_list_of_pairs(df_500):
 
 def test_transaction_costs_reduce_returns(df_500):
     """Higher commission produces lower or equal total_return."""
-    result_free = run_backtest(df_500, commission=0.0, slippage=0.0)
-    result_costly = run_backtest(df_500, commission=0.01, slippage=0.005)
+    result_free = run_backtest(df_500, BaselineStrategy(), commission=0.0, slippage=0.0)
+    result_costly = run_backtest(df_500, BaselineStrategy(), commission=0.01, slippage=0.005)
     # With costs, total return must not exceed zero-cost return
     assert result_costly.total_return <= result_free.total_return
 

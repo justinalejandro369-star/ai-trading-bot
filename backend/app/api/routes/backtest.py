@@ -2,14 +2,14 @@
 Backtesting REST endpoint.
 
 POST /api/backtest
-  Request: BacktestRequest (symbol, interval, commission, slippage, init_cash)
-  Response: BacktestResult.to_dict() — all 7 metrics + equity_curve
+  Request: BacktestRequest (symbol, interval, commission, slippage, init_cash, strategy_name)
+  Response: BacktestResult.to_dict() — all metrics + equity_curve + strategy_name
 
 The vectorbt call is CPU-bound and synchronous. It is wrapped in
 run_in_threadpool() to keep the FastAPI async event loop free during execution.
 
 Candles are loaded from the market_data table via the standard async session.
-Result is persisted to backtest_runs for Phase 4 comparison.
+Result is persisted to backtest_runs tagged with the requested strategy_name.
 """
 import json
 import logging
@@ -25,6 +25,7 @@ from app.backtesting.engine import run_backtest
 from app.backtesting.models import BacktestRequest
 from app.models.backtest import BacktestRun
 from app.models.market_data import MarketData
+from app.strategies import get_strategy
 
 __all__ = ["router"]
 
@@ -38,8 +39,7 @@ async def _load_candles_df(
     symbol: str,
     interval: str,
 ):
-    """
-    Load all stored OHLCV candles for symbol+interval from market_data as a DataFrame.
+    """Load all stored OHLCV candles for symbol+interval as a DataFrame.
 
     Returns None if no rows exist. Returns a DataFrame with DatetimeIndex
     sorted ascending by timestamp, with columns [open, high, low, close, volume].
@@ -81,20 +81,12 @@ async def run_backtest_endpoint(
     request: BacktestRequest,
     session: AsyncSession = Depends(get_session),  # type: ignore[assignment]
 ) -> dict:
-    """
-    Run a vectorbt backtest for a stored asset.
+    """Run a vectorbt backtest for a stored asset with the selected strategy."""
+    try:
+        strategy = get_strategy(request.strategy_name)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
-    Args:
-        request: BacktestRequest with symbol, interval, commission, slippage, init_cash.
-        session: Injected async DB session.
-
-    Returns:
-        BacktestResult dict with: sharpe_ratio, max_drawdown, win_rate, profit_factor,
-        total_return, total_trades, equity_curve.
-
-    Raises:
-        HTTPException 422: If fewer than MIN_CANDLES candle rows are available.
-    """
     df = await _load_candles_df(session, request.symbol, request.interval.lower())
 
     if df is None or len(df) == 0:
@@ -107,6 +99,7 @@ async def run_backtest_endpoint(
         result = await run_in_threadpool(
             run_backtest,
             df,
+            strategy,
             request.commission,
             request.slippage,
             request.init_cash,
@@ -114,10 +107,10 @@ async def run_backtest_endpoint(
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-    # Persist result to backtest_runs for Phase 4 comparison
     run = BacktestRun(
         symbol=request.symbol.upper(),
         interval=request.interval,
+        strategy_name=result.strategy_name,
         run_at=datetime.now(tz=timezone.utc),
         commission=request.commission,
         slippage=request.slippage,
@@ -134,9 +127,10 @@ async def run_backtest_endpoint(
     await session.commit()
 
     log.info(
-        "Backtest complete: %s/%s — Sharpe=%.2f Win=%.1f%% Trades=%d",
+        "Backtest complete: %s/%s [%s] — Sharpe=%.2f Win=%.1f%% Trades=%d",
         request.symbol,
         request.interval,
+        result.strategy_name,
         result.sharpe_ratio,
         result.win_rate * 100,
         result.total_trades,
@@ -148,16 +142,15 @@ async def run_backtest_endpoint(
 @router.get("/runs")
 async def list_backtest_runs(
     symbol: str | None = None,
+    strategy: str | None = None,
     session: AsyncSession = Depends(get_session),  # type: ignore[assignment]
 ) -> list[dict]:
-    """
-    List historical backtest runs (without the full equity_curve, which is too large).
-
-    Optionally filter by symbol. Results ordered by run_at descending.
-    """
+    """List historical backtest runs (without equity_curve)."""
     query = select(BacktestRun).order_by(BacktestRun.run_at.desc())
     if symbol:
         query = query.where(BacktestRun.symbol == symbol.upper())
+    if strategy:
+        query = query.where(BacktestRun.strategy_name == strategy)
 
     result = await session.execute(query)
     rows = result.scalars().all()
@@ -167,6 +160,7 @@ async def list_backtest_runs(
             "id": r.id,
             "symbol": r.symbol,
             "interval": r.interval,
+            "strategy_name": r.strategy_name,
             "run_at": r.run_at.isoformat() if r.run_at else None,
             "sharpe_ratio": r.sharpe_ratio,
             "max_drawdown": r.max_drawdown,
@@ -187,11 +181,7 @@ async def get_backtest_run(
     run_id: int,
     session: AsyncSession = Depends(get_session),  # type: ignore[assignment]
 ) -> dict:
-    """
-    Get a single backtest run including its full equity_curve.
-
-    Raises 404 if the run_id does not exist.
-    """
+    """Get a single backtest run including its full equity_curve."""
     result = await session.execute(
         select(BacktestRun).where(BacktestRun.id == run_id)
     )
@@ -204,6 +194,7 @@ async def get_backtest_run(
         "id": run.id,
         "symbol": run.symbol,
         "interval": run.interval,
+        "strategy_name": run.strategy_name,
         "run_at": run.run_at.isoformat() if run.run_at else None,
         "sharpe_ratio": run.sharpe_ratio,
         "max_drawdown": run.max_drawdown,

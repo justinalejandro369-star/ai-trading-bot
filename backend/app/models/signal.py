@@ -30,6 +30,7 @@ class TradingSignal(Base):
 
     symbol                = Column(String(20),             nullable=False, primary_key=True)
     interval              = Column(String(5),              nullable=False, primary_key=True)
+    strategy_name         = Column(String(64),             nullable=False, primary_key=True, default="baseline", server_default="baseline")
     scanned_at            = Column(DateTime(timezone=True), nullable=False)
     direction             = Column(String(4),              nullable=False)   # BUY|SELL|HOLD
     confidence            = Column(Integer,               nullable=False)   # 0-100

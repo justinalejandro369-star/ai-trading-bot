@@ -47,7 +47,7 @@ def _make_candle_rows(symbol: str, n: int, seed: int = 42) -> list[dict]:
         {
             "symbol": symbol,
             "market": "stock",
-            "interval": "1D",
+            "interval": "1d",
             "timestamp": base_ts + timedelta(days=i),
             "open": float(open_[i]),
             "high": float(high[i]),
